@@ -1,11 +1,9 @@
-package normalizer
+package model
 
-import "github.com/marcinbohm/search-index-lint/internal/model"
-
-func WalkFields(corpus Corpus, visit func(model.FieldVisit)) {
+func WalkFields(corpus Corpus, visit func(FieldVisit)) {
 	for _, mapping := range corpus.Mappings {
 		walkMappingFields(mapping, fieldVisitContext{
-			origin:        model.FieldOriginMapping,
+			origin:        FieldOriginMapping,
 			mappingSource: mapping.Source,
 		}, visit)
 	}
@@ -14,7 +12,7 @@ func WalkFields(corpus Corpus, visit func(model.FieldVisit)) {
 			continue
 		}
 		walkMappingFields(*template.Template.Mappings, fieldVisitContext{
-			origin:            model.FieldOriginIndexTemplate,
+			origin:            FieldOriginIndexTemplate,
 			mappingSource:     template.Template.Mappings.Source,
 			indexTemplateName: template.Name,
 		}, visit)
@@ -24,36 +22,36 @@ func WalkFields(corpus Corpus, visit func(model.FieldVisit)) {
 			continue
 		}
 		walkMappingFields(*template.Template.Mappings, fieldVisitContext{
-			origin:                model.FieldOriginComponentTemplate,
+			origin:                FieldOriginComponentTemplate,
 			mappingSource:         template.Template.Mappings.Source,
 			componentTemplateName: template.Name,
 		}, visit)
 	}
 }
 
-func CollectFields(corpus Corpus) []model.FieldVisit {
-	var visits []model.FieldVisit
-	WalkFields(corpus, func(visit model.FieldVisit) {
+func CollectFields(corpus Corpus) []FieldVisit {
+	var visits []FieldVisit
+	WalkFields(corpus, func(visit FieldVisit) {
 		visits = append(visits, visit)
 	})
 	return visits
 }
 
 type fieldVisitContext struct {
-	origin                model.FieldOrigin
-	mappingSource         model.Source
+	origin                FieldOrigin
+	mappingSource         Source
 	indexTemplateName     string
 	componentTemplateName string
 }
 
-func walkMappingFields(mapping model.Mapping, context fieldVisitContext, visit func(model.FieldVisit)) {
-	walkFields(mapping.Properties, context, model.FieldRoleProperty, visit)
-	walkFields(mapping.RuntimeFields, context, model.FieldRoleRuntimeField, visit)
+func walkMappingFields(mapping Mapping, context fieldVisitContext, visit func(FieldVisit)) {
+	walkFields(mapping.Properties, context, FieldRoleProperty, visit)
+	walkFields(mapping.RuntimeFields, context, FieldRoleRuntimeField, visit)
 }
 
-func walkFields(fields []model.Field, context fieldVisitContext, role model.FieldRole, visit func(model.FieldVisit)) {
+func walkFields(fields []Field, context fieldVisitContext, role FieldRole, visit func(FieldVisit)) {
 	for _, field := range fields {
-		visit(model.FieldVisit{
+		visit(FieldVisit{
 			Origin:                context.origin,
 			Role:                  role,
 			Source:                field.Source,
@@ -64,7 +62,7 @@ func walkFields(fields []model.Field, context fieldVisitContext, role model.Fiel
 			Path:                  field.Path,
 			JSONPointer:           field.JSONPointer,
 		})
-		walkFields(field.Properties, context, model.FieldRoleProperty, visit)
-		walkFields(field.Fields, context, model.FieldRoleMultiField, visit)
+		walkFields(field.Properties, context, FieldRoleProperty, visit)
+		walkFields(field.Fields, context, FieldRoleMultiField, visit)
 	}
 }

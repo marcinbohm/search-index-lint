@@ -24,8 +24,8 @@ func (r *Registry) Register(rule Rule) error {
 		return fmt.Errorf("rule is nil")
 	}
 	metadata := rule.Metadata()
-	if metadata.ID == "" {
-		return fmt.Errorf("rule ID is required")
+	if err := validateMetadata(metadata); err != nil {
+		return err
 	}
 	if _, exists := r.rules[metadata.ID]; exists {
 		return fmt.Errorf("duplicate rule ID %q", metadata.ID)
@@ -48,4 +48,26 @@ func (r *Registry) List() []Rule {
 		return list[i].Metadata().ID < list[j].Metadata().ID
 	})
 	return list
+}
+
+func validateMetadata(metadata Metadata) error {
+	if metadata.ID == "" {
+		return fmt.Errorf("rule ID is required")
+	}
+	if metadata.Name == "" {
+		return fmt.Errorf("rule %q name is required", metadata.ID)
+	}
+	if metadata.Category == "" {
+		return fmt.Errorf("rule %q category is required", metadata.ID)
+	}
+	if metadata.Severity == "" {
+		return fmt.Errorf("rule %q severity is required", metadata.ID)
+	}
+	if metadata.Confidence == "" {
+		return fmt.Errorf("rule %q confidence is required", metadata.ID)
+	}
+	if metadata.Determinism == "" {
+		return fmt.Errorf("rule %q determinism is required", metadata.ID)
+	}
+	return nil
 }

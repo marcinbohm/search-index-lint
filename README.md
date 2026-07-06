@@ -118,6 +118,7 @@ Included now:
 - canonical mapping model foundation
 - index template model foundation
 - component template model foundation
+- canonical corpus model
 - normalized field traversal helpers
 - normalization diagnostics
 - explicit file loading and directory discovery
@@ -125,6 +126,7 @@ Included now:
 - severity, confidence, finding, diagnostic, and summary models
 - console and JSON reports
 - rule registry skeleton
+- rule runner foundation
 
 Not implemented yet:
 
@@ -256,7 +258,9 @@ Current phase:
 - input discovery
 - JSON/JSONL parser foundations
 - canonical model and normalizer foundations
+- canonical corpus model
 - normalized field traversal helpers
+- rule runner foundation
 - parse and normalization diagnostic reporting
 
 No production release exists yet.

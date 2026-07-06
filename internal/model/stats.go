@@ -1,6 +1,4 @@
-package normalizer
-
-import "github.com/marcinbohm/search-index-lint/internal/model"
+package model
 
 type FieldStats struct {
 	Properties    int
@@ -11,13 +9,13 @@ type FieldStats struct {
 
 func CountFields(corpus Corpus) FieldStats {
 	var stats FieldStats
-	WalkFields(corpus, func(visit model.FieldVisit) {
+	WalkFields(corpus, func(visit FieldVisit) {
 		switch visit.Role {
-		case model.FieldRoleProperty:
+		case FieldRoleProperty:
 			stats.Properties++
-		case model.FieldRoleMultiField:
+		case FieldRoleMultiField:
 			stats.MultiFields++
-		case model.FieldRoleRuntimeField:
+		case FieldRoleRuntimeField:
 			stats.RuntimeFields++
 		}
 	})

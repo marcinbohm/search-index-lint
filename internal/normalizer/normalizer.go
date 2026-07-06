@@ -6,16 +6,8 @@ import (
 	"github.com/marcinbohm/search-index-lint/internal/model"
 )
 
-type Corpus struct {
-	Mappings           []model.Mapping
-	IndexTemplates     []model.IndexTemplate
-	ComponentTemplates []model.ComponentTemplate
-	SampleDocuments    []model.RawDocument
-	Diagnostics        []model.Diagnostic
-}
-
-func Normalize(documents []model.RawDocument) Corpus {
-	var corpus Corpus
+func Normalize(documents []model.RawDocument) model.Corpus {
+	var corpus model.Corpus
 	for _, document := range documents {
 		if len(document.Diagnostics) > 0 {
 			continue
