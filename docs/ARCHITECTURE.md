@@ -66,14 +66,14 @@ Implemented foundations:
 - `model.Corpus` as the canonical shared corpus
 - normalized field traversal helpers in `internal/model`
 - rule registry and runner foundation
-- built-in rules: `SIL001`, `SIL002`
+- built-in rules: `SIL001`, `SIL002`, `SIL003`
 - console and JSON diagnostic reports
 
 Current CLI behavior:
 
-- `lint` reports parse/normalization diagnostics plus SIL001/SIL002 findings
+- `lint` reports parse/normalization diagnostics plus SIL001/SIL002/SIL003 findings
 - rule execution runs only after parse and normalization succeed
-- only SIL001 and SIL002 are implemented
+- only SIL001, SIL002, and SIL003 are implemented
 - YAML, Markdown, SARIF, baseline, diff, config, suppressions, and cluster mode are planned future work
 
 ## Module architecture

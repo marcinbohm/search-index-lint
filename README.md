@@ -10,7 +10,7 @@ It is designed for teams that treat search schemas as code and want PR-time feed
 
 Status: pre-alpha / foundation phase.
 
-The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rules (`SIL001`, `SIL002`), and report diagnostics/findings. Rule coverage is intentionally very limited.
+The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rules (`SIL001`, `SIL002`, `SIL003`), and report diagnostics/findings. Rule coverage is intentionally very limited.
 
 ## Problem statement
 
@@ -83,7 +83,7 @@ go run ./cmd/search-index-lint lint --mapping examples/basic/mapping.json
 
 ## Current Usage
 
-Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001` and `SIL002`, then reports parse/normalization diagnostics and rule findings.
+Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, `SIL002`, and `SIL003`, then reports parse/normalization diagnostics and rule findings.
 
 ```bash
 search-index-lint lint --mapping mapping.json
@@ -161,10 +161,11 @@ Included now:
 - rule runner foundation
 - first built-in rule: `SIL001` total fields limit risk
 - second built-in rule: `SIL002` root dynamic enabled heuristic warning
+- third built-in rule: `SIL003` dynamic template missing match mapping type heuristic warning
 
 Not implemented yet:
 
-- SIL003 and the rest of the rule catalog
+- SIL004 and the rest of the rule catalog
 - YAML parsing
 - Markdown reporter
 - SARIF reporter
@@ -204,7 +205,7 @@ Initial MVP rules:
 
 - SIL001 total-fields-limit-risk (implemented, limited default-threshold version)
 - SIL002 root-dynamic-enabled (implemented, root-level explicit `dynamic: true` only)
-- SIL003 dynamic-template-missing-match-mapping-type
+- SIL003 dynamic-template-missing-match-mapping-type (implemented, missing `match_mapping_type` only)
 - SIL004 overbroad-dynamic-template
 - SIL005 dynamic-template-shadowing
 - SIL006 path-match-object-collision-risk
@@ -298,7 +299,7 @@ Current phase:
 - canonical corpus model
 - normalized field traversal helpers
 - rule runner foundation
-- built-in rules: `SIL001`, `SIL002`
+- built-in rules: `SIL001`, `SIL002`, `SIL003`
 - parse, normalization, and rule finding reporting
 
 No production release exists yet.

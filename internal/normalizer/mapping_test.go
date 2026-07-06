@@ -107,6 +107,9 @@ func TestNormalizeRawMapping(t *testing.T) {
 	if template.Match != "*" || template.MatchMappingType != "string" {
 		t.Fatalf("dynamic template fields = %#v", template)
 	}
+	if !template.HasMatchMappingType {
+		t.Fatal("dynamic template HasMatchMappingType = false, want true")
+	}
 	if template.Mapping["type"] != "keyword" {
 		t.Fatalf("dynamic template mapping type = %#v, want keyword", template.Mapping["type"])
 	}
@@ -172,6 +175,61 @@ func TestNormalizeDynamicTemplatesPreserveOrder(t *testing.T) {
 	}
 	if mapping.DynamicTemplates[0].Name != "first_template" || mapping.DynamicTemplates[1].Name != "second_template" {
 		t.Fatalf("dynamic template order = %#v", mapping.DynamicTemplates)
+	}
+}
+
+func TestNormalizeDynamicTemplateMissingMatchMappingType(t *testing.T) {
+	document := rawJSONDocument(t, model.DocumentKindMapping, "mapping.json", `{
+  "dynamic_templates": [
+    {
+      "strings_as_keywords": {
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ]
+}`)
+
+	mapping := NormalizeMapping(document)
+	if len(mapping.Diagnostics) != 0 {
+		t.Fatalf("NormalizeMapping returned diagnostics: %#v", mapping.Diagnostics)
+	}
+	if len(mapping.DynamicTemplates) != 1 {
+		t.Fatalf("dynamic template count = %d, want 1", len(mapping.DynamicTemplates))
+	}
+	template := mapping.DynamicTemplates[0]
+	if template.HasMatchMappingType {
+		t.Fatal("dynamic template HasMatchMappingType = true, want false")
+	}
+	if template.JSONPointer != "/dynamic_templates/0/strings_as_keywords" {
+		t.Fatalf("dynamic template JSON pointer = %q, want /dynamic_templates/0/strings_as_keywords", template.JSONPointer)
+	}
+}
+
+func TestNormalizeDynamicTemplateEscapedNamePointer(t *testing.T) {
+	document := rawJSONDocument(t, model.DocumentKindMapping, "mapping.json", `{
+  "dynamic_templates": [
+    {
+      "service/name~template": {
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ]
+}`)
+
+	mapping := NormalizeMapping(document)
+	if len(mapping.Diagnostics) != 0 {
+		t.Fatalf("NormalizeMapping returned diagnostics: %#v", mapping.Diagnostics)
+	}
+	if len(mapping.DynamicTemplates) != 1 {
+		t.Fatalf("dynamic template count = %d, want 1", len(mapping.DynamicTemplates))
+	}
+	template := mapping.DynamicTemplates[0]
+	if template.JSONPointer != "/dynamic_templates/0/service~1name~0template" {
+		t.Fatalf("dynamic template JSON pointer = %q, want /dynamic_templates/0/service~1name~0template", template.JSONPointer)
 	}
 }
 

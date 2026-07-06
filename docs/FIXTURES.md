@@ -132,12 +132,14 @@ Current public fixture packs:
 ```text
 fixtures/mapping-limits/sil001-total-fields-limit/
 fixtures/dynamic-mapping/sil002-root-dynamic-enabled/
+fixtures/dynamic-templates/sil003-missing-match-mapping-type/
 ```
 
 They cover:
 
 - `SIL001` default-threshold behavior with synthetic near-limit and over-limit mappings plus expected JSON reports
 - `SIL002` root-level explicit `dynamic: true` behavior with synthetic mappings and an expected JSON report
+- `SIL003` missing `match_mapping_type` behavior with synthetic dynamic templates and an expected JSON report
 
 ## Expected output
 

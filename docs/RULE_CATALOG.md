@@ -40,7 +40,7 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 |---|---|---|---|---|---|---|
 | SIL001 | total-fields-limit-risk | mapping-limits | MVP implemented | error when exceeded; warning near threshold | deterministic | low |
 | SIL002 | root-dynamic-enabled | dynamic-mapping | MVP implemented | warning | heuristic | medium |
-| SIL003 | dynamic-template-missing-match-mapping-type | dynamic-templates | MVP | warning | deterministic detection; heuristic risk | medium |
+| SIL003 | dynamic-template-missing-match-mapping-type | dynamic-templates | MVP implemented | warning | heuristic | medium |
 | SIL004 | overbroad-dynamic-template | dynamic-templates | MVP | warning | heuristic | medium |
 | SIL005 | dynamic-template-shadowing | dynamic-templates | MVP | warning | deterministic in simple cases; heuristic for wildcards | medium |
 | SIL006 | path-match-object-collision-risk | dynamic-templates | MVP | error when confirmed; warning otherwise | deterministic pattern detection; heuristic risk | medium |
@@ -137,23 +137,24 @@ ID: SIL003
 Name: dynamic-template-missing-match-mapping-type  
 Category: dynamic-templates  
 Description: Detect dynamic templates without `match_mapping_type`.  
-Why it matters: This pattern can create rollout, indexing, search correctness, compatibility, or operational reliability risk.  
+Why it matters: A dynamic template without `match_mapping_type` can match more inferred field types than intended. This may be intentional, but it can create mapping growth, type compatibility, or query behavior surprises.  
 Applies to: Elasticsearch/OpenSearch unless the selected dialect says otherwise.  
 Input required: dynamic templates  
-Deterministic vs heuristic: deterministic detection; heuristic risk  
+Deterministic vs heuristic: heuristic  
 Default severity: warning  
 False positive risk: medium  
 Stage: MVP  
+Implementation status: implemented in pre-alpha. Checks normalized dynamic templates for missing `match_mapping_type`. Does not validate type compatibility, estimate dynamic expansion, analyze ordering/shadowing, or compose component templates.
 
 Bad input:
 
 ```text
-TBD minimal fixture example for SIL003.
+fixtures/dynamic-templates/sil003-missing-match-mapping-type/mapping-missing-match-mapping-type.json
 ```
 
 Remediation:
 
-Add `match_mapping_type` and narrow match/path_match.
+Add `match_mapping_type` when the template is intended for a specific detected field type, or document why broad matching is intentional.
 
 References: TBD
 

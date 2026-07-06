@@ -33,15 +33,16 @@ func normalizeDynamicTemplates(source model.Source, value any, pointer string) (
 			}
 
 			template := model.DynamicTemplate{
-				Name:             name,
-				Source:           source,
-				JSONPointer:      definitionPointer,
-				Match:            stringValue(definition["match"]),
-				Unmatch:          stringValue(definition["unmatch"]),
-				PathMatch:        stringValue(definition["path_match"]),
-				PathUnmatch:      stringValue(definition["path_unmatch"]),
-				MatchMappingType: stringValue(definition["match_mapping_type"]),
-				Mapping:          objectMap(definition["mapping"]),
+				Name:                name,
+				Source:              source,
+				JSONPointer:         definitionPointer,
+				Match:               stringValue(definition["match"]),
+				Unmatch:             stringValue(definition["unmatch"]),
+				PathMatch:           stringValue(definition["path_match"]),
+				PathUnmatch:         stringValue(definition["path_unmatch"]),
+				MatchMappingType:    stringValue(definition["match_mapping_type"]),
+				HasMatchMappingType: hasKey(definition, "match_mapping_type"),
+				Mapping:             objectMap(definition["mapping"]),
 			}
 			templates = append(templates, template)
 		}

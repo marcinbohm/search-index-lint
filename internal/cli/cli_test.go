@@ -236,6 +236,38 @@ func TestLintSIL002FixtureExpectedJSONReport(t *testing.T) {
 	}
 }
 
+func TestLintSIL003FixtureExpectedJSONReport(t *testing.T) {
+	originalWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd returned error: %v", err)
+	}
+	repoRoot := filepath.Clean(filepath.Join("..", ".."))
+	if err := os.Chdir(repoRoot); err != nil {
+		t.Fatalf("Chdir returned error: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(originalWD); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	mapping := "fixtures/dynamic-templates/sil003-missing-match-mapping-type/mapping-missing-match-mapping-type.json"
+	expectedPath := "fixtures/dynamic-templates/sil003-missing-match-mapping-type/expected-missing-match-mapping-type.json"
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", mapping, "--format", "json")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+
+	expected, err := os.ReadFile(expectedPath)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	if stdout != string(expected) {
+		t.Fatalf("JSON report mismatch\nactual:\n%s\nexpected:\n%s", stdout, string(expected))
+	}
+}
+
 func TestLintDirectoryDiscoveryIgnoresLocal(t *testing.T) {
 	root := t.TempDir()
 	writeFileAt(t, root, "mapping.json", `{"properties":{}}`)
@@ -529,6 +561,87 @@ func TestLintFormatJSONWithWrappedSIL002Finding(t *testing.T) {
 	}
 }
 
+func TestLintDynamicTemplateMissingMatchMappingTypeWarningReturnsSuccessByDefault(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithDynamicTemplate(false))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "SIL003") {
+		t.Fatalf("stdout %q does not contain SIL003", stdout)
+	}
+	if !strings.Contains(stdout, "warning") {
+		t.Fatalf("stdout %q does not contain warning", stdout)
+	}
+}
+
+func TestLintDynamicTemplateMissingMatchMappingTypeFailOnWarningReturnsFindingsExitCode(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithDynamicTemplate(false))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path, "--fail-on", "warning")
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "SIL003") {
+		t.Fatalf("stdout %q does not contain SIL003", stdout)
+	}
+}
+
+func TestLintDynamicTemplateWithMatchMappingTypeDoesNotEmitSIL003(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithDynamicTemplate(true))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	if strings.Contains(stdout, "SIL003") {
+		t.Fatalf("stdout contains unexpected SIL003 finding: %s", stdout)
+	}
+}
+
+func TestLintFormatJSONWithSIL003Finding(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithDynamicTemplate(false))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path, "--format", "json")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+
+	var result model.RunResult
+	if err := json.Unmarshal([]byte(stdout), &result); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if result.Summary.Warning != 1 {
+		t.Fatalf("summary.warning = %d, want 1", result.Summary.Warning)
+	}
+	if result.Summary.ExitCode != exitSuccess {
+		t.Fatalf("summary.exit_code = %d, want %d", result.Summary.ExitCode, exitSuccess)
+	}
+	if len(result.Findings) != 1 {
+		t.Fatalf("findings length = %d, want 1", len(result.Findings))
+	}
+	finding := result.Findings[0]
+	if finding.ID != "SIL003" {
+		t.Fatalf("finding ID = %q, want SIL003", finding.ID)
+	}
+	if finding.Severity != model.SeverityWarning {
+		t.Fatalf("finding severity = %q, want %q", finding.Severity, model.SeverityWarning)
+	}
+	if finding.Confidence != model.ConfidenceMedium {
+		t.Fatalf("finding confidence = %q, want %q", finding.Confidence, model.ConfidenceMedium)
+	}
+	if finding.Determinism != model.DeterminismHeuristic {
+		t.Fatalf("finding determinism = %q, want %q", finding.Determinism, model.DeterminismHeuristic)
+	}
+	if finding.Category != "dynamic-templates" {
+		t.Fatalf("finding category = %q, want dynamic-templates", finding.Category)
+	}
+	if finding.JSONPointer != "/dynamic_templates/0/strings_as_keywords" {
+		t.Fatalf("finding JSON pointer = %q, want /dynamic_templates/0/strings_as_keywords", finding.JSONPointer)
+	}
+}
+
 func TestLintInvalidFailOnReturnsUsageError(t *testing.T) {
 	path := writeTempFile(t, "mapping.json", `{"properties":{"status":{"type":"keyword"}}}`)
 
@@ -552,6 +665,9 @@ func TestLintInvalidJSONDoesNotRunRules(t *testing.T) {
 		t.Fatalf("stdout contains rule finding despite parse error: %s", stdout)
 	}
 	if strings.Contains(stdout, "SIL002") {
+		t.Fatalf("stdout contains rule finding despite parse error: %s", stdout)
+	}
+	if strings.Contains(stdout, "SIL003") {
 		t.Fatalf("stdout contains rule finding despite parse error: %s", stdout)
 	}
 }
@@ -609,4 +725,12 @@ func wrappedMappingJSONWithFields(count int) string {
 
 func mappingJSONWithRootDynamic(enabled bool) string {
 	return fmt.Sprintf(`{"dynamic":%t,"properties":{"status":{"type":"keyword"}}}`, enabled)
+}
+
+func mappingJSONWithDynamicTemplate(includeMatchMappingType bool) string {
+	matchMappingType := ""
+	if includeMatchMappingType {
+		matchMappingType = `"match_mapping_type":"string",`
+	}
+	return fmt.Sprintf(`{"dynamic_templates":[{"strings_as_keywords":{%s"mapping":{"type":"keyword"}}}]}`, matchMappingType)
 }

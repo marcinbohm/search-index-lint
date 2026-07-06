@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1",
+  "tool": {
+    "name": "SearchIndexLint",
+    "version": "0.0.0-dev"
+  },
+  "summary": {
+    "files_scanned": 1,
+    "findings_total": 1,
+    "critical": 0,
+    "error": 0,
+    "warning": 1,
+    "info": 0,
+    "exit_code": 0
+  },
+  "findings": [
+    {
+      "id": "SIL003",
+      "name": "dynamic-template-missing-match-mapping-type",
+      "severity": "warning",
+      "confidence": "medium",
+      "category": "dynamic-templates",
+      "determinism": "heuristic",
+      "file": "fixtures/dynamic-templates/sil003-missing-match-mapping-type/mapping-missing-match-mapping-type.json",
+      "json_pointer": "/dynamic_templates/0/strings_as_keywords",
+      "message": "Dynamic template \"strings_as_keywords\" does not declare match_mapping_type. It may apply more broadly than intended.",
+      "remediation": "Add match_mapping_type when the template is intended for a specific detected field type, or document why broad matching is intentional.",
+      "fingerprint": "SIL003:fixtures/dynamic-templates/sil003-missing-match-mapping-type/mapping-missing-match-mapping-type.json:/dynamic_templates/0/strings_as_keywords"
+    }
+  ],
+  "diagnostics": []
+}

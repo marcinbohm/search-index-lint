@@ -22,10 +22,11 @@ Implemented foundations:
 - rule registry and runner foundation
 - built-in rule: SIL001 total fields limit risk
 - built-in rule: SIL002 root dynamic enabled
+- built-in rule: SIL003 dynamic template missing match_mapping_type
 
 Not implemented:
 
-- SIL003 and the rest of the rule catalog
+- SIL004 and the rest of the rule catalog
 - YAML
 - config loading
 - suppressions
