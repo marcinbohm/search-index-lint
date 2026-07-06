@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	exitSuccess = 0
-	exitUsage   = 2
-	exitInput   = 3
+	exitSuccess  = 0
+	exitFindings = 1
+	exitUsage    = 2
+	exitInput    = 3
+	exitInternal = 6
 )
 
 func Execute(args []string, stdout, stderr io.Writer) int {

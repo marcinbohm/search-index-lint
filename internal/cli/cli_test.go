@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -191,6 +192,81 @@ func TestLintDirectoryValidSampleJSONLReturnsSuccess(t *testing.T) {
 	}
 }
 
+func TestLintSmallMappingReturnsSuccessWithoutFindings(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", `{"properties":{"status":{"type":"keyword"}}}`)
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	if strings.Contains(stdout, "SIL001") {
+		t.Fatalf("stdout contains unexpected SIL001 finding: %s", stdout)
+	}
+}
+
+func TestLintMappingOverLimitReturnsFindingsExitCode(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithFields(1000))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "SIL001") {
+		t.Fatalf("stdout %q does not contain SIL001", stdout)
+	}
+	if !strings.Contains(stdout, "total fields") {
+		t.Fatalf("stdout %q does not contain total fields message", stdout)
+	}
+}
+
+func TestLintMappingNearLimitDefaultFailOnErrorReturnsSuccess(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithFields(800))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "SIL001") {
+		t.Fatalf("stdout %q does not contain SIL001 warning", stdout)
+	}
+}
+
+func TestLintMappingNearLimitFailOnWarningReturnsFindingsExitCode(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", mappingJSONWithFields(800))
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path, "--fail-on", "warning")
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "SIL001") {
+		t.Fatalf("stdout %q does not contain SIL001 warning", stdout)
+	}
+}
+
+func TestLintInvalidFailOnReturnsUsageError(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", `{"properties":{"status":{"type":"keyword"}}}`)
+
+	code, _, stderr := executeForTest("lint", "--mapping", path, "--fail-on", "banana")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "invalid --fail-on") {
+		t.Fatalf("stderr %q does not explain invalid fail-on", stderr)
+	}
+}
+
+func TestLintInvalidJSONDoesNotRunRules(t *testing.T) {
+	path := writeTempFile(t, "mapping.json", `{"properties":`)
+
+	code, stdout, stderr := executeForTest("lint", "--mapping", path)
+	if code != exitInput {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitInput, stdout, stderr)
+	}
+	if strings.Contains(stdout, "SIL001") {
+		t.Fatalf("stdout contains rule finding despite parse error: %s", stdout)
+	}
+}
+
 func executeForTest(args ...string) (int, string, string) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -214,4 +290,17 @@ func writeFileAt(t *testing.T, root, name, content string) {
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("WriteFile returned error: %v", err)
 	}
+}
+
+func mappingJSONWithFields(count int) string {
+	var builder strings.Builder
+	builder.WriteString(`{"properties":{`)
+	for i := 0; i < count; i++ {
+		if i > 0 {
+			builder.WriteByte(',')
+		}
+		fmt.Fprintf(&builder, "%q:{\"type\":\"keyword\"}", fmt.Sprintf("field_%04d", i))
+	}
+	builder.WriteString(`}}`)
+	return builder.String()
 }

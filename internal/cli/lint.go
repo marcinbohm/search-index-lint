@@ -11,6 +11,7 @@ import (
 	"github.com/marcinbohm/search-index-lint/internal/normalizer"
 	"github.com/marcinbohm/search-index-lint/internal/parser"
 	"github.com/marcinbohm/search-index-lint/internal/report"
+	"github.com/marcinbohm/search-index-lint/internal/rules"
 )
 
 func runLint(args []string, stdout, stderr io.Writer) int {
@@ -28,7 +29,7 @@ func runLint(args []string, stdout, stderr io.Writer) int {
 	flags.StringVar(&mapping, "mapping", "", "Mapping JSON file")
 	flags.StringVar(&template, "template", "", "Index template JSON file")
 	flags.StringVar(&componentTemplate, "component-template", "", "Component template JSON file")
-	flags.StringVar(&sampleDocs, "sample-docs", "", "JSONL sample documents")
+	flags.StringVar(&sampleDocs, "sample-docs", "", "JSONL/NDJSON sample documents")
 	flags.StringVar(&format, "format", "console", "Output format: console or json")
 	flags.StringVar(&output, "output", "", "Output file path; default stdout")
 	flags.StringVar(&failOn, "fail-on", "error", "Minimum severity that returns exit code 1")
@@ -43,6 +44,11 @@ func runLint(args []string, stdout, stderr io.Writer) int {
 
 	if format != "console" && format != "json" {
 		fmt.Fprintf(stderr, "invalid --format %q; expected console or json\n", format)
+		return exitUsage
+	}
+	failOnSeverity, err := model.ParseSeverity(failOn)
+	if err != nil {
+		fmt.Fprintf(stderr, "invalid --fail-on %q; expected info, warning, error, or critical\n", failOn)
 		return exitUsage
 	}
 
@@ -68,14 +74,31 @@ func runLint(args []string, stdout, stderr io.Writer) int {
 	if len(diagnostics) > 0 {
 		exitCode = exitInput
 	}
+	var findings []model.Finding
+	if len(diagnostics) == 0 {
+		registry, err := rules.BuiltinRegistry()
+		if err != nil {
+			fmt.Fprintf(stderr, "initialize built-in rules: %v\n", err)
+			return exitInternal
+		}
+		ruleResult, err := rules.Run(rules.Context{}, registry, rules.RunRequest{Corpus: corpus})
+		if err != nil {
+			fmt.Fprintf(stderr, "run rules: %v\n", err)
+			return exitInternal
+		}
+		findings = ruleResult.Findings
+		if hasFindingAtOrAbove(findings, failOnSeverity) {
+			exitCode = exitFindings
+		}
+	}
 
 	result := report.EmptyRunResult()
-	result.Summary = model.Summary{
-		FilesScanned: len(sources),
-		ExitCode:     exitCode,
-	}
+	result.Summary = summarizeRun(len(sources), findings, exitCode)
 	if diagnostics != nil {
 		result.Diagnostics = diagnostics
+	}
+	if findings != nil {
+		result.Findings = findings
 	}
 
 	w := stdout
@@ -110,13 +133,13 @@ func writeLintHelp(w io.Writer) {
   search-index-lint lint [path] [flags]
 
 Lint mappings, templates, component templates, and sample documents.
-Implementation is in progress.
+Runs parsing, normalization, and currently implemented built-in rules.
 
 Flags:
   --mapping <path>              Mapping JSON file
   --template <path>             Index template JSON file
   --component-template <path>   Component template JSON file
-  --sample-docs <path>          JSONL sample documents
+  --sample-docs <path>          JSONL/NDJSON sample documents
   --format <format>             Output format: console or json
   --output <path>               Output file path; default stdout
   --fail-on <severity>          info, warning, error, or critical
@@ -174,4 +197,34 @@ func parseLintSources(sources []input.Source) []model.RawDocument {
 		documents = append(documents, parser.Parse(modelSource, source.Kind, source.Content))
 	}
 	return documents
+}
+
+func hasFindingAtOrAbove(findings []model.Finding, threshold model.Severity) bool {
+	for _, finding := range findings {
+		if finding.Severity.AtLeast(threshold) {
+			return true
+		}
+	}
+	return false
+}
+
+func summarizeRun(filesScanned int, findings []model.Finding, exitCode int) model.Summary {
+	summary := model.Summary{
+		FilesScanned:  filesScanned,
+		FindingsTotal: len(findings),
+		ExitCode:      exitCode,
+	}
+	for _, finding := range findings {
+		switch finding.Severity {
+		case model.SeverityCritical:
+			summary.Critical++
+		case model.SeverityError:
+			summary.Error++
+		case model.SeverityWarning:
+			summary.Warning++
+		case model.SeverityInfo:
+			summary.Info++
+		}
+	}
+	return summary
 }

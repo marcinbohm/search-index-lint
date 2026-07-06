@@ -13,11 +13,13 @@ Current `lint` behavior:
 - accepts JSON mappings/templates and JSONL/NDJSON sample documents
 - discovers `.json`, `.jsonl`, and `.ndjson` files in directory mode
 - supports `--format console|json`
-- reports parse and normalization diagnostics only
+- reports parse and normalization diagnostics
+- runs the built-in rule registry with `SIL001`
+- emits findings for `SIL001` total fields limit risk
 
 Planned but not implemented:
 
-- real SIL rule findings
+- SIL002 and the rest of the rule catalog
 - YAML input
 - Markdown output
 - SARIF output

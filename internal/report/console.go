@@ -9,7 +9,7 @@ import (
 
 func WriteConsole(w io.Writer, result model.RunResult) error {
 	if len(result.Diagnostics) == 0 && len(result.Findings) == 0 {
-		_, err := fmt.Fprintln(w, "SearchIndexLint: no findings")
+		_, err := fmt.Fprintln(w, "SearchIndexLint: no diagnostics or findings")
 		return err
 	}
 
@@ -26,8 +26,20 @@ func WriteConsole(w io.Writer, result model.RunResult) error {
 		}
 	}
 	for _, finding := range result.Findings {
-		if _, err := fmt.Fprintf(w, "%s %s: %s\n", finding.Severity, finding.ID, finding.Message); err != nil {
+		location := finding.File
+		if finding.JSONPointer != "" {
+			location = fmt.Sprintf("%s#%s", location, finding.JSONPointer)
+		}
+		if location == "" {
+			location = "input"
+		}
+		if _, err := fmt.Fprintf(w, "%s %s: %s: %s\n", finding.Severity, finding.ID, location, finding.Message); err != nil {
 			return err
+		}
+		if finding.Remediation != "" {
+			if _, err := fmt.Fprintf(w, "  Remediation: %s\n", finding.Remediation); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

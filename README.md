@@ -10,7 +10,7 @@ It is designed for teams that treat search schemas as code and want PR-time feed
 
 Status: pre-alpha / foundation phase.
 
-The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, then report parse and normalization diagnostics. Real SIL rule findings are not implemented or emitted yet.
+The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rule (`SIL001`), and report diagnostics/findings. Rule coverage is intentionally very limited.
 
 ## Problem statement
 
@@ -83,7 +83,7 @@ go run ./cmd/search-index-lint lint --mapping examples/basic/mapping.json
 
 ## Current Usage
 
-Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, then reports parse and normalization diagnostics only. Schema rules are not implemented yet.
+Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, then reports parse/normalization diagnostics and rule findings.
 
 ```bash
 search-index-lint lint --mapping mapping.json
@@ -148,11 +148,11 @@ Included now:
 - console and JSON reports
 - rule registry skeleton
 - rule runner foundation
+- first built-in rule: `SIL001` total fields limit risk
 
 Not implemented yet:
 
-- real schema rules
-- rule findings emitted by the CLI
+- SIL002 and the rest of the rule catalog
 - YAML parsing
 - Markdown reporter
 - SARIF reporter
@@ -190,7 +190,7 @@ Included:
 
 Initial MVP rules:
 
-- SIL001 total-fields-limit-risk
+- SIL001 total-fields-limit-risk (implemented, limited default-threshold version)
 - SIL002 root-dynamic-enabled
 - SIL003 dynamic-template-missing-match-mapping-type
 - SIL004 overbroad-dynamic-template
@@ -286,7 +286,8 @@ Current phase:
 - canonical corpus model
 - normalized field traversal helpers
 - rule runner foundation
-- parse and normalization diagnostic reporting
+- first built-in rule: `SIL001`
+- parse, normalization, and rule finding reporting
 
 No production release exists yet.
 
@@ -310,4 +311,4 @@ SearchIndexLint detects risk. It does not prove a schema is safe.
 
 It does not replace staging validation, integration tests, load tests, rollout planning, cluster observability, experienced operator review, vendor documentation, or incident response judgment.
 
-A clean current pre-alpha report means only that parsing and normalization completed without diagnostics. It does not mean schema risk rules have run.
+A clean current pre-alpha report means only that parsing and normalization completed without diagnostics and the currently implemented limited rule set did not report findings. It does not mean the full schema is safe.

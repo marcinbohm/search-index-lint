@@ -38,7 +38,7 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 
 | ID | Name | Category | Stage | Severity | Determinism | FP risk |
 |---|---|---|---|---|---|---|
-| SIL001 | total-fields-limit-risk | mapping-limits | MVP | error when exceeded; warning near threshold | deterministic/heuristic | low |
+| SIL001 | total-fields-limit-risk | mapping-limits | MVP implemented | error when exceeded; warning near threshold | deterministic | low |
 | SIL002 | root-dynamic-enabled | dynamic-mapping | MVP | warning | heuristic | medium |
 | SIL003 | dynamic-template-missing-match-mapping-type | dynamic-templates | MVP | warning | deterministic detection; heuristic risk | medium |
 | SIL004 | overbroad-dynamic-template | dynamic-templates | MVP | warning | heuristic | medium |
@@ -80,10 +80,11 @@ Description: Detect mappings/templates that exceed or approach `index.mapping.to
 Why it matters: This pattern can create rollout, indexing, search correctness, compatibility, or operational reliability risk.  
 Applies to: Elasticsearch/OpenSearch unless the selected dialect says otherwise.  
 Input required: mapping or template; settings when available  
-Deterministic vs heuristic: deterministic/heuristic  
+Deterministic vs heuristic: deterministic  
 Default severity: error when exceeded; warning near threshold  
 False positive risk: low  
 Stage: MVP  
+Implementation status: implemented in pre-alpha with default limit `1000` and warning threshold `800`. Counts explicit normalized properties, multi-fields, and runtime fields per standalone mapping/template mapping. Does not estimate dynamic expansion, compose component templates, read cluster state, or read config yet.
 
 Bad input:
 
