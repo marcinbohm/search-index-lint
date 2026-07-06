@@ -1,0 +1,43 @@
+version: 1
+
+dialect:
+  engine: elasticsearch
+  version: "8.x"
+
+inputs:
+  mappings:
+    - "schemas/**/*.mapping.json"
+  index_templates:
+    - "schemas/**/*index-template*.json"
+  component_templates:
+    - "schemas/**/*component-template*.json"
+  sample_docs:
+    - "samples/**/*.jsonl"
+
+rules:
+  default: true
+  disable: []
+  configure:
+    SIL001:
+      warn_at_ratio: 0.80
+      error_at_ratio: 1.00
+    SIL012:
+      sample_max_keyword_length_warning: 1024
+    SIL015:
+      known_external_templates: []
+
+severity:
+  fail_on: error
+  min_confidence_to_fail: medium
+
+suppressions:
+  - rule: SIL027
+    file: "schemas/orders.mapping.json"
+    path: "/mappings/properties/account_id"
+    reason: "Legacy numeric ID; range queries are intentional."
+    owner: "search-platform"
+    expires: "2026-12-31"
+
+baseline:
+  file: "search-index-lint.baseline.json"
+  mode: "hide_existing"
