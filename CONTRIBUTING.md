@@ -70,7 +70,7 @@ go vet ./...
 
 ## How to add a rule
 
-Real SIL rules are not implemented yet. Coordinate first-rule work with maintainers before adding rule behavior.
+SIL001, SIL002, and SIL003 are implemented. Coordinate new rule work with maintainers before adding rule behavior, especially while diff/preflight foundation is the next priority.
 
 1. Open or create a rule request issue.
 2. Confirm the rule fits the roadmap.
