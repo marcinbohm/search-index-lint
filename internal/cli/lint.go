@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/marcinbohm/search-index-preflight/internal/input"
 	"github.com/marcinbohm/search-index-preflight/internal/model"
@@ -101,31 +100,7 @@ func runLint(args []string, stdout, stderr io.Writer) int {
 		result.Findings = findings
 	}
 
-	w := stdout
-	var file *os.File
-	if output != "" {
-		var err error
-		file, err = os.Create(output)
-		if err != nil {
-			fmt.Fprintf(stderr, "write output %q: %v\n", output, err)
-			return exitInput
-		}
-		defer file.Close()
-		w = file
-	}
-
-	if format == "json" {
-		if err := report.WriteJSON(w, result); err != nil {
-			fmt.Fprintf(stderr, "write JSON report: %v\n", err)
-			return exitInput
-		}
-	} else {
-		if err := report.WriteConsole(w, result); err != nil {
-			fmt.Fprintf(stderr, "write console report: %v\n", err)
-			return exitInput
-		}
-	}
-	return exitCode
+	return writeReport(format, output, result, stdout, stderr, exitCode)
 }
 
 func writeLintHelp(w io.Writer) {

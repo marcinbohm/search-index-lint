@@ -36,7 +36,7 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 
 ## Summary
 
-`SIL001` through `SIL003` are currently implemented static checks. Further static rule expansion is paused while the diff/preflight foundation is introduced. `DIF001` is implemented internally for future diff/preflight workflows, but it is not emitted by `lint` and is not user-visible until public diff mode is implemented. Existing rule IDs remain stable and were not renamed during the SearchIndexPreflight transition.
+`SIL001` through `SIL003` are currently implemented static checks. Further static rule expansion is paused while the diff/preflight foundation is introduced. `DIF001` is implemented for the minimal public `diff` command, but it is not emitted by `lint`. Existing rule IDs remain stable and were not renamed during the SearchIndexPreflight transition.
 
 | ID | Name | Category | Stage | Severity | Determinism | FP risk |
 |---|---|---|---|---|---|---|
@@ -75,11 +75,11 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 
 ## Diff rules
 
-Diff rules operate on old/new normalized corpora. They are internal-only until the public `diff` command is implemented.
+Diff rules operate on old/new normalized corpora. The minimal public `diff` command currently emits only DIF001.
 
 | ID | Name | Category | Status | Severity | Determinism | Notes |
 |---|---|---|---|---|---|---|
-| DIF001 | field-type-changed | schema-diff | internal implemented | error | deterministic | Not emitted by `lint`; future public diff rule. |
+| DIF001 | field-type-changed | schema-diff | experimental implemented | error | deterministic | Emitted by `diff`; not emitted by `lint`. |
 
 ---
 

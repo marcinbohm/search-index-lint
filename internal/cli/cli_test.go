@@ -20,6 +20,9 @@ func TestRootHelp(t *testing.T) {
 	if !strings.Contains(stdout, "SearchIndexPreflight") {
 		t.Fatalf("stdout %q does not contain SearchIndexPreflight", stdout)
 	}
+	if !strings.Contains(stdout, "diff") {
+		t.Fatalf("stdout %q does not list diff command", stdout)
+	}
 }
 
 func TestVersion(t *testing.T) {
@@ -672,6 +675,192 @@ func TestLintInvalidJSONDoesNotRunRules(t *testing.T) {
 	}
 }
 
+func TestDiffFieldTypeChangedReturnsFindingsExitCode(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	for _, text := range []string{"DIF001", "status", "keyword", "long"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+	if !strings.Contains(stdout, "current.json") {
+		t.Fatalf("stdout %q does not contain current file name", stdout)
+	}
+}
+
+func TestDiffNoChangesReturnsSuccess(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"keyword"}}}`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "no diagnostics or findings") {
+		t.Fatalf("stdout %q does not report clean diff", stdout)
+	}
+}
+
+func TestDiffFormatJSONWithDIF001Finding(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current, "--format", "json")
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitFindings, stderr)
+	}
+
+	var result model.RunResult
+	if err := json.Unmarshal([]byte(stdout), &result); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if result.Summary.FindingsTotal != 1 {
+		t.Fatalf("findings_total = %d, want 1", result.Summary.FindingsTotal)
+	}
+	if result.Summary.Error != 1 {
+		t.Fatalf("summary.error = %d, want 1", result.Summary.Error)
+	}
+	if result.Summary.ExitCode != exitFindings {
+		t.Fatalf("summary.exit_code = %d, want %d", result.Summary.ExitCode, exitFindings)
+	}
+	if len(result.Findings) != 1 {
+		t.Fatalf("findings length = %d, want 1", len(result.Findings))
+	}
+	finding := result.Findings[0]
+	if finding.ID != "DIF001" {
+		t.Fatalf("finding ID = %q, want DIF001", finding.ID)
+	}
+	if finding.Severity != model.SeverityError {
+		t.Fatalf("finding severity = %q, want %q", finding.Severity, model.SeverityError)
+	}
+	if finding.Category != "schema-diff" {
+		t.Fatalf("finding category = %q, want schema-diff", finding.Category)
+	}
+	if result.Diagnostics == nil {
+		t.Fatal("diagnostics is nil, want empty slice")
+	}
+	if len(result.Diagnostics) != 0 {
+		t.Fatalf("diagnostics length = %d, want 0", len(result.Diagnostics))
+	}
+}
+
+func TestDiffFailOnCriticalReturnsSuccessForDIF001Error(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current, "--fail-on", "critical", "--format", "json")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	var result model.RunResult
+	if err := json.Unmarshal([]byte(stdout), &result); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if result.Summary.ExitCode != exitSuccess {
+		t.Fatalf("summary.exit_code = %d, want %d", result.Summary.ExitCode, exitSuccess)
+	}
+	if len(result.Findings) != 1 || result.Findings[0].ID != "DIF001" {
+		t.Fatalf("expected DIF001 finding despite non-failing threshold, got %#v", result.Findings)
+	}
+}
+
+func TestDiffMissingBaseReturnsUsageError(t *testing.T) {
+	current := writeTempFile(t, "current.json", `{"properties":{"status":{"type":"long"}}}`)
+
+	code, _, stderr := executeForTest("diff", "--current", current)
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "requires --base") {
+		t.Fatalf("stderr %q does not explain missing base", stderr)
+	}
+}
+
+func TestDiffMissingCurrentReturnsUsageError(t *testing.T) {
+	base := writeTempFile(t, "base.json", `{"properties":{"status":{"type":"keyword"}}}`)
+
+	code, _, stderr := executeForTest("diff", "--base", base)
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "requires --current") {
+		t.Fatalf("stderr %q does not explain missing current", stderr)
+	}
+}
+
+func TestDiffInvalidFormatReturnsUsageError(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, _, stderr := executeForTest("diff", "--base", base, "--current", current, "--format", "xml")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "invalid --format") {
+		t.Fatalf("stderr %q does not explain invalid format", stderr)
+	}
+}
+
+func TestDiffInvalidFailOnReturnsUsageError(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, _, stderr := executeForTest("diff", "--base", base, "--current", current, "--fail-on", "banana")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "invalid --fail-on") {
+		t.Fatalf("stderr %q does not explain invalid fail-on", stderr)
+	}
+}
+
+func TestDiffInvalidBaseJSONShortCircuitsDiff(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":`, `{"properties":{"status":{"type":"long"}}}`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitInput {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitInput, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "base.json") {
+		t.Fatalf("stdout %q does not contain base file name", stdout)
+	}
+	if strings.Contains(stdout, "DIF001") {
+		t.Fatalf("stdout contains diff finding despite parse error: %s", stdout)
+	}
+}
+
+func TestDiffInvalidCurrentJSONShortCircuitsDiff(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":{"status":{"type":"keyword"}}}`, `{"properties":`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitInput {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitInput, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "current.json") {
+		t.Fatalf("stdout %q does not contain current file name", stdout)
+	}
+	if strings.Contains(stdout, "DIF001") {
+		t.Fatalf("stdout contains diff finding despite parse error: %s", stdout)
+	}
+}
+
+func TestDiffBothInvalidJSONReportsBothFiles(t *testing.T) {
+	base, current := writeDiffMappingFiles(t, `{"properties":`, `{"properties":`)
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitInput {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitInput, stdout, stderr)
+	}
+	if !strings.Contains(stdout, "base.json") {
+		t.Fatalf("stdout %q does not contain base file name", stdout)
+	}
+	if !strings.Contains(stdout, "current.json") {
+		t.Fatalf("stdout %q does not contain current file name", stdout)
+	}
+	if strings.Contains(stdout, "DIF001") {
+		t.Fatalf("stdout contains diff finding despite parse error: %s", stdout)
+	}
+}
+
 func executeForTest(args ...string) (int, string, string) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -684,6 +873,14 @@ func writeTempFile(t *testing.T, name, content string) string {
 	root := t.TempDir()
 	writeFileAt(t, root, name, content)
 	return filepath.Join(root, name)
+}
+
+func writeDiffMappingFiles(t *testing.T, baseContent string, currentContent string) (string, string) {
+	t.Helper()
+	root := t.TempDir()
+	writeFileAt(t, root, "base.json", baseContent)
+	writeFileAt(t, root, "current.json", currentContent)
+	return filepath.Join(root, "base.json"), filepath.Join(root, "current.json")
 }
 
 func writeFileAt(t *testing.T, root, name, content string) {

@@ -25,6 +25,8 @@ func Execute(args []string, stdout, stderr io.Writer) int {
 		return runVersion(args[1:], stdout, stderr)
 	case "lint":
 		return runLint(args[1:], stdout, stderr)
+	case "diff":
+		return runDiff(args[1:], stdout, stderr)
 	case "rules":
 		return runRules(args[1:], stdout, stderr)
 	case "explain":
@@ -48,6 +50,7 @@ Usage:
 
 Available Commands:
   lint        Lint mappings, templates, and sample documents
+  diff        Compare two schema inputs
   rules       Inspect rule metadata
   explain     Explain a rule by ID
   version     Print version information

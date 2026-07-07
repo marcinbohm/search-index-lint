@@ -6,7 +6,7 @@ Draft contract.
 
 Implemented behavior must match this contract unless an ADR updates it.
 
-Current pre-alpha implementation supports `lint`, `version`, `rules list` as a stub, and `explain` as a stub.
+Current pre-alpha implementation supports `lint`, minimal experimental `diff`, `version`, `rules list` as a stub, and `explain` as a stub.
 
 Current `lint` behavior:
 
@@ -19,6 +19,15 @@ Current `lint` behavior:
 - emits heuristic warning findings for `SIL002` root dynamic enabled
 - emits heuristic warning findings for `SIL003` dynamic templates missing `match_mapping_type`
 
+Current `diff` behavior:
+
+- accepts `--base <path>` and `--current <path>`
+- paths may be JSON files or directories containing `.json`, `.jsonl`, and `.ndjson`
+- parses and normalizes both inputs
+- compares normalized corpora with `internal/diff`
+- emits `DIF001` field type changed findings
+- supports `--format console|json`, `--output`, and `--fail-on`
+
 Planned but not implemented:
 
 - SIL004 and the rest of the rule catalog
@@ -28,7 +37,8 @@ Planned but not implemented:
 - config loading
 - suppressions
 - baseline
-- diff
+- git-aware diff options
+- diff rules beyond `DIF001`
 - cluster commands
 
 ## Current vs Planned Commands
@@ -36,14 +46,14 @@ Planned but not implemented:
 | Command | Status | Notes |
 |---|---|---|
 | `search-index-preflight lint` | Current; future compatibility alias | Static checks over supplied mappings/templates/sample docs. |
+| `search-index-preflight diff` | Current experimental | Minimal old/new schema comparison; currently emits only `DIF001`. |
 | `search-index-preflight version` | Current | Prints version information. |
 | `search-index-preflight rules list` | Current stub | Command exists; full rule listing UX is not complete. |
 | `search-index-preflight explain` | Current stub | Command exists; full rule explanation UX is not complete. |
 | `search-index-preflight check` | Planned | Future preferred name for static checks. |
-| `search-index-preflight diff` | Planned | Future preflight analysis comparing old/new schema corpora. |
 | `search-index-preflight doctor` | Planned later | Future read-only cluster inspection mode. |
 
-The project, Go module, and binary are now named `search-index-preflight`. `check`, `diff`, and `doctor` remain planned.
+The project, Go module, and binary are now named `search-index-preflight`. `check` and `doctor` remain planned.
 
 No command may perform cluster write operations.
 
@@ -52,6 +62,7 @@ No command may perform cluster write operations.
 ```text
 search-index-preflight
   lint
+  diff
   rules list
   explain
   version
@@ -61,7 +72,6 @@ Future:
 
 ```text
 search-index-preflight check ./schemas
-search-index-preflight diff old/ new/
 search-index-preflight doctor --url http://localhost:9200 --pattern "logs-*"
 ```
 
@@ -133,6 +143,33 @@ Beta flags:
 
 - `--baseline`
 - `--baseline-mode`
+
+## `search-index-preflight diff`
+
+Examples:
+
+```bash
+search-index-preflight diff --base old/ --current new/
+search-index-preflight diff --base old/mapping.json --current new/mapping.json --format json
+```
+
+Flags:
+
+```text
+--base <path>       Base schema file or directory
+--current <path>    Current schema file or directory
+--format <format>   console or json
+--output <path>     Output file
+--fail-on <severity> Minimum severity that returns exit code 1
+```
+
+Current limitations:
+
+- emits only `DIF001 field-type-changed`
+- no git refs or `--base origin/main`
+- no Markdown or SARIF output
+- no settings, aliases, dynamic template, template priority, composed template, sample document, or cluster-backed comparison
+- no doctor/oracle/engine-backed validation
 
 ## Input formats
 

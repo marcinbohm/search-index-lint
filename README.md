@@ -12,8 +12,8 @@ Status: pre-alpha / foundation phase.
 
 The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rules (`SIL001`, `SIL002`, `SIL003`), and report diagnostics/findings. Rule coverage is intentionally very limited.
 
-Current: `lint` static checks over supplied schema files.  
-Next strategic direction: diff/preflight analysis for schema changes before merge or deployment.
+Current: `lint` static checks over supplied schema files plus a minimal experimental `diff` command for field type changes.  
+Next strategic direction: deeper diff/preflight analysis for schema changes before merge or deployment.
 
 ## Problem statement
 
@@ -86,7 +86,7 @@ go run ./cmd/search-index-preflight lint --mapping examples/basic/mapping.json
 
 ## Current Usage
 
-Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, `SIL002`, and `SIL003`, then reports parse/normalization diagnostics and rule findings.
+Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, `SIL002`, and `SIL003` for static linting, and can run the first diff rule `DIF001` through the experimental `diff` command.
 
 ```bash
 search-index-preflight lint --mapping mapping.json
@@ -96,11 +96,14 @@ search-index-preflight lint --sample-docs samples.jsonl
 search-index-preflight lint --sample-docs samples.ndjson
 search-index-preflight lint --mapping mapping.json --sample-docs samples.jsonl
 search-index-preflight lint ./schemas
+search-index-preflight diff --base old-schemas/ --current new-schemas/
 search-index-preflight rules list
 search-index-preflight explain SIL001
 ```
 
 Directory mode currently discovers only `.json`, `.jsonl`, and `.ndjson` files.
+
+The experimental `diff` command currently emits only `DIF001` field type changes. It does not support git refs, PR comments, settings/alias diffs, dynamic template diffs, composed template analysis, sample document comparison, or cluster-backed validation.
 
 ## Planned Direction
 
@@ -108,11 +111,11 @@ Planned future modes:
 
 ```bash
 search-index-preflight check ./schemas      # planned future preferred static-check command
-search-index-preflight diff old/ new/       # planned diff/preflight analysis
+search-index-preflight diff --base old/ --current new/  # minimal experimental command exists
 search-index-preflight doctor --url http://localhost:9200 --pattern "logs-*"  # planned later, read-only
 ```
 
-These commands are not implemented today. The current working command remains:
+`check` and `doctor` are not implemented today. The current static-check command remains:
 
 ```bash
 search-index-preflight lint ./schemas
@@ -181,17 +184,19 @@ Included now:
 - first built-in rule: `SIL001` total fields limit risk
 - second built-in rule: `SIL002` root dynamic enabled heuristic warning
 - third built-in rule: `SIL003` dynamic template missing match mapping type heuristic warning
+- experimental `diff --base <path> --current <path>` command
+- first diff rule: `DIF001` field type changed
 
 Not implemented yet:
 
 - SIL004 and the rest of the rule catalog
-- diff/preflight analysis
+- deeper diff/preflight analysis beyond DIF001
 - YAML parsing
 - Markdown reporter
 - SARIF reporter
 - GitHub Action
 - baseline mode
-- diff mode
+- git-aware diff mode
 - cluster mode
 - auto-fix
 - config loading
