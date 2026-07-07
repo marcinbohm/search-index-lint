@@ -53,11 +53,13 @@ Completed foundations:
 - internal diff foundation for comparing normalized field changes
 - internal diff-aware rule layer with DIF001 field-type-changed, DIF002 field-removed, and DIF003 field-added
 - minimal public diff command emitting DIF001/DIF002/DIF003
+- public `rules list` metadata output for lint and diff rules
 
 Current CLI behavior:
 
 - `lint` reports parse and normalization diagnostics plus SIL001-SIL003 findings
 - `diff --base <path> --current <path>` reports DIF001 field type change findings, DIF002 field removed warnings, and DIF003 field added info findings
+- `rules list` reports public lint and diff rule metadata in console or JSON format
 - rule execution is wired into the CLI
 - console and JSON reports are implemented
 - DIF001/DIF002/DIF003 are not emitted by `lint`

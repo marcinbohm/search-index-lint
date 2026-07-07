@@ -6,7 +6,9 @@ Draft contract.
 
 Implemented behavior must match this contract unless an ADR updates it.
 
-Current pre-alpha implementation supports `lint`, minimal experimental `diff`, `version`, `rules list` as a stub, and `explain` as a stub.
+Current pre-alpha implementation supports `lint`, minimal experimental `diff`, `version`, and `rules list`.
+
+`explain` exists as a stub.
 
 Current `lint` behavior:
 
@@ -50,7 +52,7 @@ Planned but not implemented:
 | `search-index-preflight lint` | Current; future compatibility alias | Static checks over supplied mappings/templates/sample docs. |
 | `search-index-preflight diff` | Current experimental | Minimal old/new schema comparison; currently emits `DIF001`, `DIF002`, and `DIF003`. |
 | `search-index-preflight version` | Current | Prints version information. |
-| `search-index-preflight rules list` | Current stub | Command exists; full rule listing UX is not complete. |
+| `search-index-preflight rules list` | Current | Lists public lint and diff rule metadata. |
 | `search-index-preflight explain` | Current stub | Command exists; full rule explanation UX is not complete. |
 | `search-index-preflight check` | Planned | Future preferred name for static checks. |
 | `search-index-preflight doctor` | Planned later | Future read-only cluster inspection mode. |
@@ -182,6 +184,33 @@ Current limitations:
 - no Markdown or SARIF output
 - no settings, aliases, dynamic template, template priority, composed template, sample document, or cluster-backed comparison
 - no doctor/oracle/engine-backed validation
+
+## `search-index-preflight rules list`
+
+Examples:
+
+```bash
+search-index-preflight rules list
+search-index-preflight rules list --family lint
+search-index-preflight rules list --family diff
+search-index-preflight rules list --format json
+search-index-preflight rules list --family diff --format json
+```
+
+Flags:
+
+```text
+--format <format>   console or json
+--family <family>   all, lint, or diff
+```
+
+Current behavior:
+
+- lists public lint rule metadata for `SIL001`, `SIL002`, and `SIL003`
+- lists public diff rule metadata for `DIF001`, `DIF002`, and `DIF003`
+- console output includes ID, family, severity, category, and name
+- JSON output includes ID, family, name, category, severity, confidence, determinism, and description
+- does not run rules or inspect input files
 
 ## Input formats
 

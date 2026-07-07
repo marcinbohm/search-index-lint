@@ -26,6 +26,7 @@ Implemented foundations:
 - internal diff foundation for field added/removed/type-changed changes
 - internal diff-aware rule layer with DIF001 field-type-changed, DIF002 field-removed, and DIF003 field-added
 - minimal public `diff --base --current` command
+- public `rules list` metadata output for lint and diff rules
 
 Not implemented:
 
@@ -41,7 +42,7 @@ Not implemented:
 - migration/versioning commands or validation
 - cluster mode
 
-Next expected sprint should not implement SIL004 by default. Do not reimplement parser, normalizer, corpus, traversal, static rule-runner, internal field-diff, internal DIF001/DIF002/DIF003, or minimal public diff command foundations.
+Next expected sprint should not implement SIL004 by default. Do not reimplement parser, normalizer, corpus, traversal, static rule-runner, internal field-diff, internal DIF001/DIF002/DIF003, minimal public diff command foundations, or `rules list` metadata output.
 
 ## Current Strategic Direction
 
@@ -95,7 +96,7 @@ If implementation is explicitly requested later, build on the current lint/diff 
 
 ### Phase 0: repository setup
 
-Create Go module, CLI root, `version`, `lint`, `rules list`, and `explain` stubs, CI workflow, and placeholder version package.
+Create Go module, CLI root, `version`, `lint`, initial `rules list` command, initial `explain` command, CI workflow, and placeholder version package.
 
 Files:
 

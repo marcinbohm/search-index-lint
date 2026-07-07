@@ -102,6 +102,7 @@ search-index-preflight diff --base fixtures/diff/dif002-field-removed/base --cur
 search-index-preflight diff --base fixtures/diff/dif003-field-added/base --current fixtures/diff/dif003-field-added/current
 search-index-preflight diff --base fixtures/diff/mixed-field-changes/base --current fixtures/diff/mixed-field-changes/current
 search-index-preflight rules list
+search-index-preflight rules list --family diff --format json
 search-index-preflight explain SIL001
 ```
 
@@ -172,7 +173,8 @@ WARNING SIL012 long-keyword-without-ignore-above
 Included now:
 
 - Go CLI skeleton
-- `version`, `lint`, `rules list`, and `explain` commands
+- `version`, `lint`, `diff`, `rules list`, and `explain` commands
+- public rule metadata listing for lint and diff rules through `rules list`
 - JSON mapping/template parsing
 - JSONL/NDJSON sample document parsing with line-number diagnostics
 - directory discovery for `.json`, `.jsonl`, and `.ndjson`

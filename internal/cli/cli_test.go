@@ -35,6 +35,148 @@ func TestVersion(t *testing.T) {
 	}
 }
 
+func TestRulesListConsoleListsAllPublicRules(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+	for _, text := range []string{"SIL001", "SIL002", "SIL003", "DIF001", "DIF002", "DIF003", "lint", "diff", "error", "warning", "info"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+}
+
+func TestRulesListFamilyLint(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list", "--family", "lint")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+	for _, text := range []string{"SIL001", "SIL002", "SIL003"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+	for _, text := range []string{"DIF001", "DIF002", "DIF003"} {
+		if strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q contains unexpected %q", stdout, text)
+		}
+	}
+}
+
+func TestRulesListFamilyDiff(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list", "--family", "diff")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+	for _, text := range []string{"DIF001", "DIF002", "DIF003"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+	for _, text := range []string{"SIL001", "SIL002", "SIL003"} {
+		if strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q contains unexpected %q", stdout, text)
+		}
+	}
+}
+
+func TestRulesListFormatJSON(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list", "--format", "json")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+
+	var output ruleListOutput
+	if err := json.Unmarshal([]byte(stdout), &output); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if len(output.Rules) != 6 {
+		t.Fatalf("rules length = %d, want 6", len(output.Rules))
+	}
+	wantIDs := []string{"SIL001", "SIL002", "SIL003", "DIF001", "DIF002", "DIF003"}
+	if got := ruleListIDs(output.Rules); fmt.Sprint(got) != fmt.Sprint(wantIDs) {
+		t.Fatalf("rule IDs = %#v, want %#v", got, wantIDs)
+	}
+	families := map[string]bool{}
+	for _, rule := range output.Rules {
+		if rule.ID == "" || rule.Family == "" || rule.Name == "" || rule.Category == "" || rule.Severity == "" || rule.Confidence == "" || rule.Determinism == "" || rule.Description == "" {
+			t.Fatalf("rule has empty metadata field: %#v", rule)
+		}
+		families[rule.Family] = true
+	}
+	if !families["lint"] || !families["diff"] {
+		t.Fatalf("families = %#v, want lint and diff", families)
+	}
+}
+
+func TestRulesListFamilyDiffFormatJSON(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list", "--family", "diff", "--format", "json")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+
+	var output ruleListOutput
+	if err := json.Unmarshal([]byte(stdout), &output); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if len(output.Rules) != 3 {
+		t.Fatalf("rules length = %d, want 3", len(output.Rules))
+	}
+	wantIDs := []string{"DIF001", "DIF002", "DIF003"}
+	if got := ruleListIDs(output.Rules); fmt.Sprint(got) != fmt.Sprint(wantIDs) {
+		t.Fatalf("rule IDs = %#v, want %#v", got, wantIDs)
+	}
+	for _, rule := range output.Rules {
+		if rule.Family != "diff" {
+			t.Fatalf("rule family = %q, want diff for %#v", rule.Family, rule)
+		}
+	}
+}
+
+func TestRulesListInvalidFormatReturnsUsageError(t *testing.T) {
+	code, _, stderr := executeForTest("rules", "list", "--format", "yaml")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "invalid --format") {
+		t.Fatalf("stderr %q does not explain invalid format", stderr)
+	}
+}
+
+func TestRulesListInvalidFamilyReturnsUsageError(t *testing.T) {
+	code, _, stderr := executeForTest("rules", "list", "--family", "all-rules")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "invalid --family") {
+		t.Fatalf("stderr %q does not explain invalid family", stderr)
+	}
+}
+
+func TestRulesListRejectsPositionalArgs(t *testing.T) {
+	code, _, stderr := executeForTest("rules", "list", "extra")
+	if code != exitUsage {
+		t.Fatalf("Execute returned %d, want %d", code, exitUsage)
+	}
+	if !strings.Contains(stderr, "does not accept positional arguments") {
+		t.Fatalf("stderr %q does not explain positional args", stderr)
+	}
+}
+
+func TestRulesListHelpReturnsSuccess(t *testing.T) {
+	code, stdout, stderr := executeForTest("rules", "list", "--help")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
+	}
+	help := stdout + stderr
+	for _, text := range []string{"--format", "--family"} {
+		if !strings.Contains(help, text) {
+			t.Fatalf("help output %q does not contain %q", help, text)
+		}
+	}
+}
+
 func TestLintNoInputReturnsUsageError(t *testing.T) {
 	code, _, stderr := executeForTest("lint")
 	if code != exitUsage {
@@ -1645,6 +1787,29 @@ type expectedFindingFixture struct {
 	File            string   `json:"file"`
 	JSONPointer     string   `json:"json_pointer"`
 	MessageContains []string `json:"message_contains"`
+}
+
+type ruleListOutput struct {
+	Rules []ruleListItemForTest `json:"rules"`
+}
+
+type ruleListItemForTest struct {
+	ID          string `json:"id"`
+	Family      string `json:"family"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	Severity    string `json:"severity"`
+	Confidence  string `json:"confidence"`
+	Determinism string `json:"determinism"`
+	Description string `json:"description"`
+}
+
+func ruleListIDs(rules []ruleListItemForTest) []string {
+	ids := make([]string, 0, len(rules))
+	for _, rule := range rules {
+		ids = append(ids, rule.ID)
+	}
+	return ids
 }
 
 func readExpectedFinding(t *testing.T, path string) expectedFindingFixture {
