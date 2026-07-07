@@ -27,11 +27,12 @@ Completed foundations:
 - SIL001-SIL003
 - fixtures and report tests for implemented rules
 - internal diff foundation for field added/removed/type-changed changes
+- internal diff-aware rule layer with DIF001
 
 Next milestones:
 
-1. decide whether to expose a minimal public `diff` command or add the first internal diff rules
-2. first diff rules
+1. decide whether to expose a minimal public `diff` command or harden internal diff rules further
+2. first public diff wiring
 3. Markdown/PR report
 4. doctor/field_caps proof of concept
 5. GitHub Action/SARIF later
@@ -48,6 +49,7 @@ Completed foundations:
 - M2 rule registry and runner foundation
 - static check rules SIL001-SIL003 with fixtures and report coverage
 - internal diff foundation for comparing normalized field changes
+- internal diff-aware rule layer with DIF001 field-type-changed
 
 Current CLI behavior:
 
@@ -55,10 +57,11 @@ Current CLI behavior:
 - rule execution is wired into the CLI
 - console and JSON reports are implemented
 - no public `diff` command is implemented yet
+- DIF001 is internal only and is not emitted by `lint`
 
 Next:
 
-- public diff command or first diff rules, depending on review direction
+- public diff command or additional internal diff-rule hardening, depending on review direction
 
 ## Pre-alpha
 

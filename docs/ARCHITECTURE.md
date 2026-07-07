@@ -60,7 +60,7 @@ input discovery -> parser -> normalizer -> model.Corpus -> rule runner foundatio
 It also includes the first internal diff foundation:
 
 ```text
-base model.Corpus + current model.Corpus -> internal field-level diff result
+base model.Corpus + current model.Corpus -> internal field-level diff result -> internal diff-rule findings
 ```
 
 Implemented foundations:
@@ -72,8 +72,10 @@ Implemented foundations:
 - `model.Corpus` as the canonical shared corpus
 - normalized field traversal helpers in `internal/model`
 - internal field-level corpus comparison in `internal/diff`
+- internal diff-aware rule layer in `internal/diffrules`
 - rule registry and runner foundation
 - built-in rules: `SIL001`, `SIL002`, `SIL003`
+- internal diff rule: `DIF001`
 - console and JSON diagnostic reports
 
 Current CLI behavior:
@@ -81,7 +83,8 @@ Current CLI behavior:
 - `lint` reports parse/normalization diagnostics plus SIL001/SIL002/SIL003 findings
 - rule execution runs only after parse and normalization succeed
 - only SIL001, SIL002, and SIL003 are implemented
-- the public `diff` command, diff rules, YAML, Markdown, SARIF, baseline, config, suppressions, and cluster mode are planned future work
+- `DIF001` is internal only and is not emitted by `lint`
+- the public `diff` command, public diff findings, YAML, Markdown, SARIF, baseline, config, suppressions, and cluster mode are planned future work
 
 ## Strategic Architecture Direction
 
@@ -99,7 +102,7 @@ Future public diff pipeline:
 base inputs + current inputs -> normalize both -> semantic diff -> diff rules -> report
 ```
 
-The current implementation has only the internal semantic diff foundation for field added/removed/type-changed changes. It does not expose a public `diff` command and does not emit diff findings yet.
+The current implementation has the internal semantic diff foundation for field added/removed/type-changed changes and an internal `DIF001` field-type-changed rule. It does not expose a public `diff` command and does not emit diff findings from the CLI yet.
 
 Future doctor pipeline:
 
@@ -107,7 +110,7 @@ Future doctor pipeline:
 read-only cluster snapshot -> field capabilities model -> doctor rules -> report
 ```
 
-The current implementation only has the static check path. `diff` and `doctor` are planned capabilities and must not be represented as implemented behavior until code exists.
+The current public CLI only exposes the static check path. Public `diff` and `doctor` commands are planned capabilities and must not be represented as implemented behavior until code exists.
 
 Current static rules remain useful as the offline-fast subset and should not be deleted. Future diff rules can build on the same parser, normalizer, canonical model, and report infrastructure.
 

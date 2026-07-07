@@ -36,7 +36,7 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 
 ## Summary
 
-`SIL001` through `SIL003` are currently implemented static checks. Further static rule expansion is paused while the diff/preflight foundation is introduced. Future diff rules may use a separate range or category; that decision is TBD. Existing rule IDs remain stable and were not renamed during the SearchIndexPreflight transition.
+`SIL001` through `SIL003` are currently implemented static checks. Further static rule expansion is paused while the diff/preflight foundation is introduced. `DIF001` is implemented internally for future diff/preflight workflows, but it is not emitted by `lint` and is not user-visible until public diff mode is implemented. Existing rule IDs remain stable and were not renamed during the SearchIndexPreflight transition.
 
 | ID | Name | Category | Stage | Severity | Determinism | FP risk |
 |---|---|---|---|---|---|---|
@@ -70,6 +70,16 @@ Deterministic findings may fail CI by default if severity is `error` or higher. 
 | SIL028 | runtime-fields-overuse-risk | runtime | v1 | warning | heuristic | high |
 | SIL029 | unsupported-field-type-for-dialect | compatibility | v1 | error | deterministic when capability matrix known | low |
 | SIL030 | source-disabled-risk | metadata | v1 | warning | heuristic | medium |
+
+---
+
+## Diff rules
+
+Diff rules operate on old/new normalized corpora. They are internal-only until the public `diff` command is implemented.
+
+| ID | Name | Category | Status | Severity | Determinism | Notes |
+|---|---|---|---|---|---|---|
+| DIF001 | field-type-changed | schema-diff | internal implemented | error | deterministic | Not emitted by `lint`; future public diff rule. |
 
 ---
 
