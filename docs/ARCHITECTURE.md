@@ -111,6 +111,14 @@ Future doctor pipeline:
 read-only cluster snapshot -> field capabilities model -> doctor rules -> report
 ```
 
+Future offline migration/versioning pipeline:
+
+```text
+ordered schema versions or migration manifests -> lint each state -> diff consecutive states -> migration/versioning preflight report
+```
+
+The migration/versioning pipeline is planned only. It must remain offline and preflight-only: no cluster writes, no apply command, no alias cutover execution, no reindex execution, no rollback execution, and no migration state stored in Elasticsearch/OpenSearch.
+
 The current public CLI exposes the static check path and a minimal experimental `diff` command. `doctor` remains planned and must not be represented as implemented behavior until code exists.
 
 Current static rules remain useful as the offline-fast subset and should not be deleted. Future diff rules can build on the same parser, normalizer, canonical model, and report infrastructure.

@@ -38,6 +38,7 @@ Not implemented:
 - baseline
 - git-aware diff options
 - diff rules beyond DIF001/DIF002/DIF003
+- migration/versioning commands or validation
 - cluster mode
 
 Next expected sprint should not implement SIL004 by default. Do not reimplement parser, normalizer, corpus, traversal, static rule-runner, internal field-diff, internal DIF001/DIF002/DIF003, or minimal public diff command foundations.
@@ -52,11 +53,25 @@ The current diff foundation compares two normalized corpora and detects field ad
 
 - harden minimal public diff behavior and fixtures
 - harden the internal diff-rule layer further
+- document or refine the future offline migration/versioning concept
 - no oracle/engine-backed validation yet
 - no cluster mode
 - no cluster writes
 
 Keep existing `lint` behavior working during and after the rename. Static checks SIL001-SIL003 remain the offline-fast subset of the future preflight product.
+
+## Future Offline Migration/Versioning Direction
+
+ADR 0004 and `docs/MIGRATION_VERSIONING_CONCEPT.md` describe planned future work only.
+
+Do not implement migration/versioning commands unless explicitly requested. In particular, do not add `versions validate`, `migrations validate`, `migrations plan`, `migrate apply`, cluster writes, alias cutover execution, reindex execution, rollback execution, or migration state in Elasticsearch/OpenSearch.
+
+If implementation is explicitly requested later, build on the current lint/diff foundations:
+
+- validate ordered schema inputs or migration manifests offline
+- run existing lint checks against each schema state
+- run existing diff checks between consecutive states
+- report preflight risks without mutating clusters
 
 ## Working rules
 

@@ -126,6 +126,8 @@ search-index-preflight doctor --url http://localhost:9200 --pattern "logs-*"  # 
 search-index-preflight lint ./schemas
 ```
 
+Future direction also includes offline migration/versioning validation for schema evolution. That future layer is planned as a helper/preflight workflow only: no cluster writes, no apply command, no alias cutover execution, no reindex execution, and no rollback execution.
+
 ## Example output
 
 Current `SIL001` finding example:
@@ -198,6 +200,7 @@ Not implemented yet:
 
 - SIL004 and the rest of the rule catalog
 - deeper diff/preflight analysis beyond DIF001/DIF002/DIF003
+- offline migration/versioning validation
 - YAML parsing
 - Markdown reporter
 - SARIF reporter

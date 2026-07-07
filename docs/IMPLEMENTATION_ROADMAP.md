@@ -32,11 +32,12 @@ Completed foundations:
 
 Next milestones:
 
-1. harden minimal public diff behavior and fixtures
-2. add the next diff rule only after review
-3. Markdown/PR report
-4. doctor/field_caps proof of concept
-5. GitHub Action/SARIF later
+1. document future offline migration/versioning direction without implementing it
+2. harden minimal public diff behavior and fixtures
+3. add the next diff rule only after review
+4. Markdown/PR report
+5. doctor/field_caps proof of concept
+6. GitHub Action/SARIF later
 
 Stop expanding state-only heuristic rules for now. Do not implement SIL004 next unless explicitly approved. The next major implementation track should be diff/preflight foundation.
 
@@ -64,6 +65,31 @@ Current CLI behavior:
 Next:
 
 - harden public diff behavior, add fixtures, or add the next diff rule depending on review direction
+
+## Future: Offline Migration/Versioning Layer
+
+Status: planned, not implemented.
+
+This future layer would validate ordered schema versions or migration manifests offline. It should reuse the parser, normalizer, `lint`, `diff`, and report foundations rather than becoming a cluster-side migration executor.
+
+- [x] ADR accepted: `docs/ADR/0004-offline-migration-versioning-layer.md`
+- [x] concept doc: `docs/MIGRATION_VERSIONING_CONCEPT.md`
+- [ ] choose final command naming
+- [ ] define input model
+- [ ] validate version chain
+- [ ] diff consecutive versions
+- [ ] run lint on each version
+- [ ] produce migration/versioning report
+- [ ] implementation
+
+Boundaries:
+
+- no cluster writes
+- no `migrate apply`
+- no alias cutover execution
+- no reindex execution
+- no rollback execution
+- no migration state stored in Elasticsearch/OpenSearch
 
 ## Pre-alpha
 
@@ -214,4 +240,4 @@ Only if v1 has adoption:
 - query workload hints
 - Terraform/Kubernetes integration
 - editor/LSP integration
-- migration advisory mode
+- offline migration/versioning advisory mode, with no cluster writes or apply semantics

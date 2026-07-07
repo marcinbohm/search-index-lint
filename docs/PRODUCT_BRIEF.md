@@ -82,6 +82,10 @@ search-index-preflight diff --base old/ --current new/
 
 This is minimal experimental behavior. It currently emits `DIF001` field type changes, `DIF002` field removals, and `DIF003` field additions; broader diff analysis is still planned.
 
+### Future offline migration/versioning validation
+
+A future offline migration/versioning layer may validate ordered schema versions or migration manifests in CI, lint each state, diff consecutive states, and produce reviewer-friendly preflight reports. It will not apply changes to clusters, execute reindexing, cut over aliases, execute rollbacks, or store migration state in Elasticsearch/OpenSearch.
+
 ### Sample document compatibility checks
 
 A team maintains sample payloads alongside mappings. SearchIndexPreflight verifies whether sample documents match declared schema expectations.
@@ -105,7 +109,7 @@ SearchIndexPreflight currently emits console and JSON reports. Markdown and SARI
 
 ## Non-goals
 
-SearchIndexPreflight is not a SaaS product, dashboard, OpenSearch Dashboards plugin, mapping generator, schema migration framework, automatic fixer, replacement for staging/load tests, or a tool that writes to clusters. Future doctor mode must be read-only.
+SearchIndexPreflight is not a SaaS product, dashboard, OpenSearch Dashboards plugin, mapping generator, cluster migration executor, automatic fixer, replacement for staging/load tests, or a tool that writes to clusters. Future doctor mode must be read-only. Future migration/versioning work must remain offline and preflight-only.
 
 ## User stories
 
