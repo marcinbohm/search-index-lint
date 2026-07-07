@@ -133,6 +133,10 @@ Current public fixture packs:
 fixtures/mapping-limits/sil001-total-fields-limit/
 fixtures/dynamic-mapping/sil002-root-dynamic-enabled/
 fixtures/dynamic-templates/sil003-missing-match-mapping-type/
+fixtures/diff/dif001-field-type-changed/
+fixtures/diff/dif002-field-removed/
+fixtures/diff/dif003-field-added/
+fixtures/diff/no-changes/
 ```
 
 They cover:
@@ -140,6 +144,10 @@ They cover:
 - `SIL001` default-threshold behavior with synthetic near-limit and over-limit mappings plus expected JSON reports
 - `SIL002` root-level explicit `dynamic: true` behavior with synthetic mappings and an expected JSON report
 - `SIL003` missing `match_mapping_type` behavior with synthetic dynamic templates and an expected JSON report
+- `DIF001` field type changed behavior
+- `DIF002` field removed behavior
+- `DIF003` field added behavior
+- no-change diff behavior
 
 Existing fixtures cover static check rules and the minimal public diff rules. Future preflight fixture areas should include:
 
@@ -152,7 +160,7 @@ Do not create those directories until the corresponding implementation work star
 
 ## Expected output
 
-Every fixture must include `expected.json`.
+Rule fixtures should include deterministic expected output. Existing static rule fixtures use full expected JSON reports. Existing diff fixtures use stable finding-level JSON snippets where that is less brittle than full reports.
 
 Minimal expected report:
 

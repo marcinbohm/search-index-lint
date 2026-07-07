@@ -10,9 +10,9 @@ It is designed for teams that treat search schemas as code and want PR-time feed
 
 Status: pre-alpha / foundation phase.
 
-The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rules (`SIL001`, `SIL002`, `SIL003`), and report diagnostics/findings. Rule coverage is intentionally very limited.
+The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in static rules (`SIL001`, `SIL002`, `SIL003`), run the first diff rules (`DIF001`, `DIF002`, `DIF003`), and report diagnostics/findings. Rule coverage is intentionally very limited.
 
-Current: `lint` static checks over supplied schema files plus a minimal experimental `diff` command for field type changes and removed fields.  
+Current: `lint` static checks over supplied schema files plus a minimal experimental `diff` command for field type changes, removed fields, and added fields.  
 Next strategic direction: deeper diff/preflight analysis for schema changes before merge or deployment.
 
 ## Problem statement

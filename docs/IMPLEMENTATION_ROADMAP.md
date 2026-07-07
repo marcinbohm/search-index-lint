@@ -87,13 +87,13 @@ Done criteria:
 - `go test ./...` passes
 - `search-index-preflight lint fixtures/... --format json` works
 - every implemented rule has fixtures
-- invalid JSON/YAML returns clean error
+- invalid JSON returns clean error
 - no network access
 - no cluster code path
 - no panics on malformed fixtures
 - README accurately reflects implemented status
 
-Out of scope: SARIF, GitHub Action, baseline, diff, cluster mode, auto-fix, plugin API, Docker image.
+Out of scope: SARIF, GitHub Action, baseline, git-aware diff, cluster mode, auto-fix, plugin API, Docker image.
 
 ## MVP
 

@@ -50,5 +50,5 @@ No functional behavior changes are introduced by this rename.
 - Public docs and tests use the new name.
 - JSON report `tool.name` uses `SearchIndexPreflight`.
 - The GitHub repository should be renamed or redirected outside this code change if it has not already been renamed.
-- `check`, `diff`, and `doctor` remain future work.
+- At the time of the rename, `check`, `diff`, and `doctor` remained future work.
 - No new rules, diff behavior, doctor behavior, cluster access, config, suppressions, SARIF, Markdown reporter, GitHub Action wrapper, or dependencies are added.

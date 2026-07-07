@@ -129,7 +129,7 @@ As an SRE, I want suppressions and baselines, so that legacy issues do not block
 
 | Phase | Metrics |
 |---|---|
-| Pre-alpha | CLI lints a schema directory; SIL001-SIL003; fixtures; deterministic JSON; no cluster required |
+| Pre-alpha | CLI lints a schema directory; minimal diff emits DIF001-DIF003; fixtures; deterministic JSON; no cluster required |
 | Alpha | diff/preflight foundation; Markdown/PR report direction; public fixtures; first external feedback |
 | Beta | baseline or SARIF if still needed; compatibility profiles; docs for default-on rules; CI on Linux/macOS/Windows |
 | v1 | stable CLI/JSON/rule IDs; signed artifacts; action v1; 25+ documented rules |
