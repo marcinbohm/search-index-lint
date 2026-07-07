@@ -1,5 +1,5 @@
 package diffrules
 
 func BuiltinRegistry() (*Registry, error) {
-	return NewRegistry(NewDIF001())
+	return NewRegistry(NewDIF001(), NewDIF002())
 }

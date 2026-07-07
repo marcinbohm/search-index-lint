@@ -61,7 +61,7 @@ Secondary users:
 
 ### PR-time schema preflight
 
-A developer changes an index template or mapping. SearchIndexPreflight runs in CI and reports static risks today. Future SearchIndexPreflight diff mode should compare old and new schema states and report change-specific risks before merge.
+A developer changes an index template or mapping. SearchIndexPreflight runs in CI and reports static risks today. The minimal experimental diff mode can compare old and new schema states for field type changes and removed fields before merge.
 
 ### Offline mapping/template risk review
 
@@ -72,15 +72,15 @@ search-index-preflight lint ./schemas
 search-index-preflight lint --template logs.index-template.json
 ```
 
-### Future schema change diff
+### Schema change diff
 
 A maintainer or CI workflow compares the current repository schema with a proposed schema directory.
 
 ```bash
-search-index-preflight diff old/ new/  # planned
+search-index-preflight diff --base old/ --current new/
 ```
 
-This is planned future behavior, not implemented today.
+This is minimal experimental behavior. It currently emits `DIF001` field type changes and `DIF002` field removals; broader diff analysis is still planned.
 
 ### Sample document compatibility checks
 

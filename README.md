@@ -12,7 +12,7 @@ Status: pre-alpha / foundation phase.
 
 The current CLI is not production-ready. It can parse and normalize JSON mappings/templates and JSONL/NDJSON sample documents, run the first built-in rules (`SIL001`, `SIL002`, `SIL003`), and report diagnostics/findings. Rule coverage is intentionally very limited.
 
-Current: `lint` static checks over supplied schema files plus a minimal experimental `diff` command for field type changes.  
+Current: `lint` static checks over supplied schema files plus a minimal experimental `diff` command for field type changes and removed fields.  
 Next strategic direction: deeper diff/preflight analysis for schema changes before merge or deployment.
 
 ## Problem statement
@@ -86,7 +86,7 @@ go run ./cmd/search-index-preflight lint --mapping examples/basic/mapping.json
 
 ## Current Usage
 
-Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, `SIL002`, and `SIL003` for static linting, and can run the first diff rule `DIF001` through the experimental `diff` command.
+Current pre-alpha behavior parses JSON mappings/templates and JSONL/NDJSON sample documents, normalizes supported schema shapes into internal models, runs `SIL001`, `SIL002`, and `SIL003` for static linting, and can run `DIF001` and `DIF002` through the experimental `diff` command.
 
 ```bash
 search-index-preflight lint --mapping mapping.json
@@ -98,13 +98,14 @@ search-index-preflight lint --mapping mapping.json --sample-docs samples.jsonl
 search-index-preflight lint ./schemas
 search-index-preflight diff --base old-schemas/ --current new-schemas/
 search-index-preflight diff --base fixtures/diff/dif001-field-type-changed/base --current fixtures/diff/dif001-field-type-changed/current
+search-index-preflight diff --base fixtures/diff/dif002-field-removed/base --current fixtures/diff/dif002-field-removed/current
 search-index-preflight rules list
 search-index-preflight explain SIL001
 ```
 
 Directory mode currently discovers only `.json`, `.jsonl`, and `.ndjson` files.
 
-The experimental `diff` command currently emits only `DIF001` field type changes. It does not support git refs, PR comments, settings/alias diffs, dynamic template diffs, composed template analysis, sample document comparison, or cluster-backed validation.
+The experimental `diff` command currently emits `DIF001` field type changes and `DIF002` field removals. `DIF002` is a warning and does not fail by default with `--fail-on error`; use `--fail-on warning` to fail on removed fields. Diff does not support git refs, PR comments, settings/alias diffs, dynamic template diffs, composed template analysis, sample document comparison, or cluster-backed validation.
 
 Diff matching is intentionally simple: explicit file-vs-file inputs are compared as one logical resource even when filenames differ, while directory-vs-directory inputs are matched by relative path. File-vs-directory behavior is path-based and limited. There is no rename detection yet.
 
@@ -189,11 +190,12 @@ Included now:
 - third built-in rule: `SIL003` dynamic template missing match mapping type heuristic warning
 - experimental `diff --base <path> --current <path>` command
 - first diff rule: `DIF001` field type changed
+- second diff rule: `DIF002` field removed
 
 Not implemented yet:
 
 - SIL004 and the rest of the rule catalog
-- deeper diff/preflight analysis beyond DIF001
+- deeper diff/preflight analysis beyond DIF001/DIF002
 - YAML parsing
 - Markdown reporter
 - SARIF reporter

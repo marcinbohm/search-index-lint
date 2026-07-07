@@ -9,18 +9,22 @@ import (
 	"github.com/marcinbohm/search-index-preflight/internal/model"
 )
 
-func TestBuiltinRegistryContainsOnlyDIF001(t *testing.T) {
+func TestBuiltinRegistryContainsDIF001AndDIF002(t *testing.T) {
 	registry, err := BuiltinRegistry()
 	if err != nil {
 		t.Fatalf("BuiltinRegistry returned error: %v", err)
 	}
 
 	rules := registry.List()
-	if len(rules) != 1 {
-		t.Fatalf("expected one built-in diff rule, got %d", len(rules))
+	if len(rules) != 2 {
+		t.Fatalf("expected two built-in diff rules, got %d", len(rules))
 	}
-	if rules[0].Metadata().ID != "DIF001" {
-		t.Fatalf("expected DIF001, got %q", rules[0].Metadata().ID)
+	ids := []string{rules[0].Metadata().ID, rules[1].Metadata().ID}
+	want := []string{"DIF001", "DIF002"}
+	for i := range want {
+		if ids[i] != want[i] {
+			t.Fatalf("rule IDs = %#v, want %#v", ids, want)
+		}
 	}
 }
 
@@ -117,7 +121,7 @@ func TestRunRejectsNilRegistry(t *testing.T) {
 	}
 }
 
-func TestRunExecutesBuiltinDIF001(t *testing.T) {
+func TestRunExecutesBuiltinDiffRules(t *testing.T) {
 	registry, err := BuiltinRegistry()
 	if err != nil {
 		t.Fatalf("BuiltinRegistry returned error: %v", err)
@@ -126,17 +130,21 @@ func TestRunExecutesBuiltinDIF001(t *testing.T) {
 	result, err := Run(Context{}, registry, RunRequest{Result: diff.Result{
 		FieldChanges: []diff.FieldChange{
 			fieldTypeChanged("status", model.FieldRoleProperty, "keyword", "long", "/properties/status", "/properties/status"),
+			fieldRemoved("legacy_id", model.FieldRoleProperty, "keyword", "/properties/legacy_id"),
 		},
 	}})
 	if err != nil {
 		t.Fatalf("Run returned error: %v", err)
 	}
 
-	if len(result.Findings) != 1 {
-		t.Fatalf("expected one finding, got %#v", result.Findings)
+	if len(result.Findings) != 2 {
+		t.Fatalf("expected two findings, got %#v", result.Findings)
 	}
 	if result.Findings[0].ID != "DIF001" {
 		t.Fatalf("expected DIF001 finding, got %q", result.Findings[0].ID)
+	}
+	if result.Findings[1].ID != "DIF002" {
+		t.Fatalf("expected DIF002 finding, got %q", result.Findings[1].ID)
 	}
 }
 
@@ -163,6 +171,32 @@ func TestDiffCompareToDIF001Integration(t *testing.T) {
 	}
 	if runResult.Findings[0].ID != "DIF001" {
 		t.Fatalf("expected DIF001, got %q", runResult.Findings[0].ID)
+	}
+}
+
+func TestDiffCompareToDIF002Integration(t *testing.T) {
+	base := corpusWithMapping(property("status", "keyword"), property("legacy_id", "keyword"))
+	current := corpusWithMapping(property("status", "keyword"))
+
+	diffResult, err := diff.Compare(base, current)
+	if err != nil {
+		t.Fatalf("diff.Compare returned error: %v", err)
+	}
+	registry, err := BuiltinRegistry()
+	if err != nil {
+		t.Fatalf("BuiltinRegistry returned error: %v", err)
+	}
+
+	runResult, err := Run(Context{}, registry, RunRequest{Result: diffResult})
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+
+	if len(runResult.Findings) != 1 {
+		t.Fatalf("expected one finding, got %#v", runResult.Findings)
+	}
+	if runResult.Findings[0].ID != "DIF002" {
+		t.Fatalf("expected DIF002, got %q", runResult.Findings[0].ID)
 	}
 }
 

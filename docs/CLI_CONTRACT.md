@@ -26,6 +26,7 @@ Current `diff` behavior:
 - parses and normalizes both inputs
 - compares normalized corpora with `internal/diff`
 - emits `DIF001` field type changed findings
+- emits `DIF002` field removed warning findings
 - supports `--format console|json`, `--output`, and `--fail-on`
 
 Planned but not implemented:
@@ -38,7 +39,7 @@ Planned but not implemented:
 - suppressions
 - baseline
 - git-aware diff options
-- diff rules beyond `DIF001`
+- diff rules beyond `DIF001`/`DIF002`
 - cluster commands
 
 ## Current vs Planned Commands
@@ -46,7 +47,7 @@ Planned but not implemented:
 | Command | Status | Notes |
 |---|---|---|
 | `search-index-preflight lint` | Current; future compatibility alias | Static checks over supplied mappings/templates/sample docs. |
-| `search-index-preflight diff` | Current experimental | Minimal old/new schema comparison; currently emits only `DIF001`. |
+| `search-index-preflight diff` | Current experimental | Minimal old/new schema comparison; currently emits `DIF001` and `DIF002`. |
 | `search-index-preflight version` | Current | Prints version information. |
 | `search-index-preflight rules list` | Current stub | Command exists; full rule listing UX is not complete. |
 | `search-index-preflight explain` | Current stub | Command exists; full rule explanation UX is not complete. |
@@ -152,6 +153,7 @@ Examples:
 search-index-preflight diff --base old/ --current new/
 search-index-preflight diff --base old/mapping.json --current new/mapping.json --format json
 search-index-preflight diff --base fixtures/diff/dif001-field-type-changed/base --current fixtures/diff/dif001-field-type-changed/current
+search-index-preflight diff --base fixtures/diff/dif002-field-removed/base --current fixtures/diff/dif002-field-removed/current --fail-on warning
 ```
 
 Flags:
@@ -166,7 +168,8 @@ Flags:
 
 Current limitations:
 
-- emits only `DIF001 field-type-changed`
+- emits `DIF001 field-type-changed`
+- emits `DIF002 field-removed` as a warning; it does not fail with default `--fail-on error`
 - explicit file-vs-file inputs are compared as one logical resource, even when filenames differ
 - directory-vs-directory inputs are matched by relative path
 - file-vs-directory inputs are path-based and limited

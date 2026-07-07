@@ -1,0 +1,11 @@
+{
+  "id": "DIF002",
+  "name": "field-removed",
+  "severity": "warning",
+  "category": "schema-diff",
+  "file": "mapping.json",
+  "json_pointer": "/properties/legacy_id",
+  "message_contains": [
+    "legacy_id"
+  ]
+}
