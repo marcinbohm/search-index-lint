@@ -2,9 +2,9 @@
 
 ## Product vision
 
-SearchIndexPreflight helps engineering teams catch Elasticsearch/OpenSearch schema and template rollout risks before they reach production.
+SearchIndexPreflight helps engineering teams catch Elasticsearch/OpenSearch schema changes that are valid, but risky, before they reach production.
 
-SearchIndexPreflight is a preflight safety CLI for Elasticsearch/OpenSearch schema changes.
+SearchIndexPreflight is a PR-time preflight safety CLI for Elasticsearch/OpenSearch schema changes.
 
 The current implementation is an offline-first CLI for linting:
 
@@ -133,7 +133,7 @@ As an SRE, I want suppressions and baselines, so that legacy issues do not block
 
 | Phase | Metrics |
 |---|---|
-| Pre-alpha | CLI lints a schema directory; minimal diff emits DIF001-DIF003; fixtures; deterministic JSON; no cluster required |
+| Pre-alpha | CLI lints a schema directory; minimal diff emits DIF001-DIF003; rule metadata commands; fixtures; deterministic JSON; no cluster required |
 | Alpha | diff/preflight foundation; Markdown/PR report direction; public fixtures; first external feedback |
 | Beta | baseline or SARIF if still needed; compatibility profiles; docs for default-on rules; CI on Linux/macOS/Windows |
 | v1 | stable CLI/JSON/rule IDs; signed artifacts; action v1; 25+ documented rules |

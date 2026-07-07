@@ -23,7 +23,11 @@ Every rule must be backed by fixtures before it is considered done.
 11. Fixture names should be boring and descriptive.
 12. Every fixture should be safe to publish.
 
-## Directory structure
+## Current directory structure
+
+Implemented fixture packs currently live under the directories listed in [Current fixture packs](#current-fixture-packs). The broader structure below is future-oriented and should not be read as implemented YAML/config/suppression support.
+
+## Future directory structure
 
 ```text
 fixtures/
@@ -50,8 +54,8 @@ fixtures/
 ```text
 fixtures/<category>/<case>/
   README.md
-  fixture.yaml
-  search-index-preflight.yaml          # optional
+  fixture.yaml              # future metadata shape
+  search-index-preflight.yaml          # future optional config
   mapping.json              # optional
   index-template.json       # optional
   component-template.json   # optional
@@ -61,7 +65,9 @@ fixtures/<category>/<case>/
   expected.sarif.json       # optional
 ```
 
-## Fixture metadata
+## Future fixture metadata
+
+The metadata example below is a planned shape, not a currently loaded fixture format.
 
 ```yaml
 id: SIL015-template-priority-conflict
@@ -150,6 +156,14 @@ They cover:
 - `DIF003` field added behavior
 - mixed `DIF001`/`DIF002`/`DIF003` behavior in one diff report
 - no-change diff behavior
+
+Practical user-facing examples live separately under `examples/`:
+
+```text
+examples/basic/
+examples/field-type-change/
+examples/dynamic-template-risk/
+```
 
 Existing fixtures cover static check rules and the minimal public diff rules. Future preflight fixture areas should include:
 

@@ -1,0 +1,2 @@
+error DIF001: mapping.json#/properties/status: Field "status" changed type from "keyword" to "long".
+  Remediation: Changing a mapped field type usually requires creating a new index and reindexing or rolling over with a compatible migration plan. Verify whether existing indices and queries depend on the previous type.

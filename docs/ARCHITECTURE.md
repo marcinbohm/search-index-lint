@@ -6,6 +6,8 @@ SearchIndexPreflight should be offline-first, deterministic where possible, expl
 
 ## High-level architecture
 
+This diagram is a target architecture. The implemented subset is described in [Current Implemented Architecture](#current-implemented-architecture).
+
 ```text
 search-index-preflight CLI
   |
@@ -126,6 +128,8 @@ Current static rules remain useful as the offline-fast subset and should not be 
 Oracle or engine-backed validation may be explored later, but it is future work, not current code. Cluster-backed modes must be read-only and must not add cluster write operations.
 
 ## Module architecture
+
+This layout includes planned packages. Not every package shown below exists today.
 
 ```text
 cmd/search-index-preflight/

@@ -77,7 +77,9 @@ search-index-preflight check ./schemas
 search-index-preflight doctor --url http://localhost:9200 --pattern "logs-*"
 ```
 
-## Global flags
+## Current and future flags
+
+The implemented commands define their own flags. Some flags below are planned and are listed to preserve direction, not current behavior.
 
 ```text
 --config <path>          Path to config file
@@ -376,7 +378,9 @@ JSON skeleton:
 }
 ```
 
-## Config file
+## Future config file
+
+Config loading is planned, not implemented.
 
 Default names:
 
@@ -384,7 +388,7 @@ Default names:
 - `search-index-preflight.yml`
 - `.search-index-preflight.yaml`
 
-Example config is provided in `search-index-preflight.example.yaml`.
+Future example config shape is documented in `search-index-preflight.future.example.yaml`.
 
 ## Exit codes
 
@@ -439,7 +443,7 @@ Suppressions without reasons are invalid.
 
 ## Baseline mode
 
-Beta scope.
+Beta scope. Not implemented.
 
 Commands:
 

@@ -68,7 +68,9 @@ Current CLI behavior:
 
 Next:
 
-- harden public diff behavior, add fixtures, or add the next diff rule depending on review direction
+- prepare alpha-readiness documentation, onboarding, examples, and repository presentation
+- keep migration/versioning as ADR/concept only until explicitly approved for implementation
+- add the next diff rule only after review
 
 ## Future: Offline Migration/Versioning Layer
 
@@ -94,6 +96,20 @@ Boundaries:
 - no reindex execution
 - no rollback execution
 - no migration state stored in Elasticsearch/OpenSearch
+
+## Alpha-readiness checkpoint
+
+Goal: make the repository understandable and credible for early external review without claiming production readiness.
+
+Scope:
+
+- README value proposition and quick demo
+- getting-started guide
+- practical examples with expected output
+- changelog
+- alpha-readiness checklist
+- maintainer workflow docs separated from product docs
+- future config example clearly labeled as not implemented
 
 ## Pre-alpha
 

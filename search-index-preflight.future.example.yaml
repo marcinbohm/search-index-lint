@@ -1,3 +1,7 @@
+# Future config example.
+# Config loading, rule configuration, suppressions, and baseline mode are not
+# implemented in pre-alpha yet. This file documents a possible future shape only.
+
 version: 1
 
 dialect:

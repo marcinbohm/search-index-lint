@@ -13,11 +13,7 @@ SearchIndexPreflight has no stable release yet.
 
 ## Reporting a vulnerability
 
-Do not report security vulnerabilities through public GitHub issues.
-
-Preferred reporting channel: TBD.
-
-Until a private reporting channel is configured, open a minimal public issue saying that you need a private security contact, without including sensitive details.
+Please report suspected vulnerabilities by opening a GitHub security advisory if available for this repository. If that is not available, open a minimal public issue saying that you need a private security contact, without including sensitive details.
 
 Do not include production mappings, cluster URLs, credentials, tokens, customer data, internal service names, private logs, full production templates, or sensitive sample documents.
 

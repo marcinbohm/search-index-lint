@@ -1,0 +1,2 @@
+warning SIL003: examples/dynamic-template-risk/mapping.json#/dynamic_templates/0/strings_as_keywords: Dynamic template "strings_as_keywords" does not declare match_mapping_type. It may apply more broadly than intended.
+  Remediation: Add match_mapping_type when the template is intended for a specific detected field type, or document why broad matching is intentional.
