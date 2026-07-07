@@ -156,6 +156,7 @@ search-index-preflight diff --base old/mapping.json --current new/mapping.json -
 search-index-preflight diff --base fixtures/diff/dif001-field-type-changed/base --current fixtures/diff/dif001-field-type-changed/current
 search-index-preflight diff --base fixtures/diff/dif002-field-removed/base --current fixtures/diff/dif002-field-removed/current --fail-on warning
 search-index-preflight diff --base fixtures/diff/dif003-field-added/base --current fixtures/diff/dif003-field-added/current --fail-on info
+search-index-preflight diff --base fixtures/diff/mixed-field-changes/base --current fixtures/diff/mixed-field-changes/current
 ```
 
 Flags:

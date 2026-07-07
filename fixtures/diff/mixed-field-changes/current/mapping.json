@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "status": {
+      "type": "long"
+    },
+    "customer_id": {
+      "type": "keyword"
+    }
+  }
+}

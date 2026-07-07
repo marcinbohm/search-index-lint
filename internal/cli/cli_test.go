@@ -877,6 +877,114 @@ func TestDiffDIF003FixtureJSONMatchesExpectedFindingFields(t *testing.T) {
 	assertFindingMatchesExpected(t, result.Findings[0], expected)
 }
 
+func TestDiffMixedFixtureEmitsAllDiffRules(t *testing.T) {
+	base := fixturePath("diff", "mixed-field-changes", "base")
+	current := fixturePath("diff", "mixed-field-changes", "current")
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current)
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	for _, text := range []string{"DIF001", "DIF002", "DIF003", "error", "warning", "info", "status", "legacy_id", "customer_id"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+}
+
+func TestDiffMixedFixtureJSONMatchesExpectedFindingFields(t *testing.T) {
+	base := fixturePath("diff", "mixed-field-changes", "base")
+	current := fixturePath("diff", "mixed-field-changes", "current")
+	expected := readExpectedFindings(t, fixturePath("diff", "mixed-field-changes", "expected.findings.json"))
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current, "--format", "json")
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+
+	var result model.RunResult
+	if err := json.Unmarshal([]byte(stdout), &result); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, stdout)
+	}
+	if result.Summary.FindingsTotal != 3 {
+		t.Fatalf("findings_total = %d, want 3", result.Summary.FindingsTotal)
+	}
+	if result.Summary.Error != 1 {
+		t.Fatalf("summary.error = %d, want 1", result.Summary.Error)
+	}
+	if result.Summary.Warning != 1 {
+		t.Fatalf("summary.warning = %d, want 1", result.Summary.Warning)
+	}
+	if result.Summary.Info != 1 {
+		t.Fatalf("summary.info = %d, want 1", result.Summary.Info)
+	}
+	if result.Summary.ExitCode != exitFindings {
+		t.Fatalf("summary.exit_code = %d, want %d", result.Summary.ExitCode, exitFindings)
+	}
+	if len(result.Diagnostics) != 0 {
+		t.Fatalf("diagnostics length = %d, want 0", len(result.Diagnostics))
+	}
+	if result.Diagnostics == nil {
+		t.Fatal("diagnostics is nil, want empty slice")
+	}
+	if len(result.Findings) != len(expected) {
+		t.Fatalf("findings length = %d, want %d", len(result.Findings), len(expected))
+	}
+	for i := range expected {
+		assertFindingMatchesExpected(t, result.Findings[i], expected[i])
+	}
+}
+
+func TestDiffMixedFixtureFailOnCriticalReportsFindingsWithoutFailing(t *testing.T) {
+	base := fixturePath("diff", "mixed-field-changes", "base")
+	current := fixturePath("diff", "mixed-field-changes", "current")
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current, "--fail-on", "critical")
+	if code != exitSuccess {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitSuccess, stdout, stderr)
+	}
+	for _, text := range []string{"DIF001", "DIF002", "DIF003"} {
+		if !strings.Contains(stdout, text) {
+			t.Fatalf("stdout %q does not contain %q", stdout, text)
+		}
+	}
+}
+
+func TestDiffMixedFixtureOutputWritesJSONReport(t *testing.T) {
+	base := fixturePath("diff", "mixed-field-changes", "base")
+	current := fixturePath("diff", "mixed-field-changes", "current")
+	output := filepath.Join(t.TempDir(), "report.json")
+
+	code, stdout, stderr := executeForTest("diff", "--base", base, "--current", current, "--format", "json", "--output", output)
+	if code != exitFindings {
+		t.Fatalf("Execute returned %d, want %d; stdout=%s stderr=%s", code, exitFindings, stdout, stderr)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty when --output is used", stdout)
+	}
+
+	content, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	var result model.RunResult
+	if err := json.Unmarshal(content, &result); err != nil {
+		t.Fatalf("report is not valid JSON: %v\n%s", err, string(content))
+	}
+	if result.Summary.Error != 1 {
+		t.Fatalf("summary.error = %d, want 1", result.Summary.Error)
+	}
+	if result.Summary.Warning != 1 {
+		t.Fatalf("summary.warning = %d, want 1", result.Summary.Warning)
+	}
+	if result.Summary.Info != 1 {
+		t.Fatalf("summary.info = %d, want 1", result.Summary.Info)
+	}
+	if result.Summary.ExitCode != exitFindings {
+		t.Fatalf("summary.exit_code = %d, want %d", result.Summary.ExitCode, exitFindings)
+	}
+}
+
 func TestDiffNoChangesFixtureReturnsSuccess(t *testing.T) {
 	base := fixturePath("diff", "no-changes", "base")
 	current := fixturePath("diff", "no-changes", "current")
@@ -1550,6 +1658,21 @@ func readExpectedFinding(t *testing.T, path string) expectedFindingFixture {
 		t.Fatalf("expected finding fixture is invalid JSON: %v", err)
 	}
 	return expected
+}
+
+func readExpectedFindings(t *testing.T, path string) []expectedFindingFixture {
+	t.Helper()
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	var expected struct {
+		Findings []expectedFindingFixture `json:"findings"`
+	}
+	if err := json.Unmarshal(content, &expected); err != nil {
+		t.Fatalf("expected findings fixture is invalid JSON: %v", err)
+	}
+	return expected.Findings
 }
 
 func assertFindingMatchesExpected(t *testing.T, finding model.Finding, expected expectedFindingFixture) {

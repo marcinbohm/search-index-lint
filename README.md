@@ -100,6 +100,7 @@ search-index-preflight diff --base old-schemas/ --current new-schemas/
 search-index-preflight diff --base fixtures/diff/dif001-field-type-changed/base --current fixtures/diff/dif001-field-type-changed/current
 search-index-preflight diff --base fixtures/diff/dif002-field-removed/base --current fixtures/diff/dif002-field-removed/current
 search-index-preflight diff --base fixtures/diff/dif003-field-added/base --current fixtures/diff/dif003-field-added/current
+search-index-preflight diff --base fixtures/diff/mixed-field-changes/base --current fixtures/diff/mixed-field-changes/current
 search-index-preflight rules list
 search-index-preflight explain SIL001
 ```

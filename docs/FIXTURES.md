@@ -136,6 +136,7 @@ fixtures/dynamic-templates/sil003-missing-match-mapping-type/
 fixtures/diff/dif001-field-type-changed/
 fixtures/diff/dif002-field-removed/
 fixtures/diff/dif003-field-added/
+fixtures/diff/mixed-field-changes/
 fixtures/diff/no-changes/
 ```
 
@@ -147,6 +148,7 @@ They cover:
 - `DIF001` field type changed behavior
 - `DIF002` field removed behavior
 - `DIF003` field added behavior
+- mixed `DIF001`/`DIF002`/`DIF003` behavior in one diff report
 - no-change diff behavior
 
 Existing fixtures cover static check rules and the minimal public diff rules. Future preflight fixture areas should include:

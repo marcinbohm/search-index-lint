@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "status": {
+      "type": "keyword"
+    },
+    "legacy_id": {
+      "type": "keyword"
+    }
+  }
+}
