@@ -30,7 +30,7 @@ func TestVersion(t *testing.T) {
 	if code != exitSuccess {
 		t.Fatalf("Execute returned %d, want %d; stderr=%s", code, exitSuccess, stderr)
 	}
-	if strings.TrimSpace(stdout) != "SearchIndexPreflight version 0.0.0-dev" {
+	if strings.TrimSpace(stdout) != "SearchIndexPreflight version 0.0.1-prealpha" {
 		t.Fatalf("version output = %q", stdout)
 	}
 }

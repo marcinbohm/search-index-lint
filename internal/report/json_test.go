@@ -24,7 +24,7 @@ func TestWriteJSONDeterministicEmptyResult(t *testing.T) {
   "schema_version": "0.1",
   "tool": {
     "name": "SearchIndexPreflight",
-    "version": "0.0.0-dev"
+    "version": "0.0.1-prealpha"
   },
   "summary": {
     "files_scanned": 0,
